@@ -1,0 +1,19 @@
+{
+  "name": "tsura-cad",
+  "version": "1.0.0",
+  "description": "Tsura CAD — parametric 3D modeling studio in the browser",
+  "scripts": {
+    "start": "python3 -m http.server 8080"
+  },
+  "dependencies": {
+    "three": "^0.160.0",
+    "three-bvh-csg": "^0.0.16",
+    "three-mesh-bvh": "^0.7.3"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1",
+    "playwright": "^1.61.1"
+  },
+  "type": "module",
+  "private": true
+}

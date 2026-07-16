@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#f6f7f9">
+<title>צורה — סטודיו תלת־ממד הנדסי</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='28' height='28' rx='7' fill='%232563eb'/%3E%3Cpath d='M10 11h12v3h-8l8 7v3H10v-3h8l-8-7z' fill='white'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/main.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three/three.module.js",
+    "three/addons/": "./vendor/three/addons/",
+    "three-mesh-bvh": "./vendor/three-mesh-bvh.module.js",
+    "three-bvh-csg": "./vendor/three-bvh-csg.module.js"
+  }
+}
+</script>
+</head>
+<body>
+
+<!-- ══════════════════ סרגל עליון ══════════════════ -->
+<header id="appbar" class="appbar">
+  <div class="appbar-group appbar-start">
+    <div class="brand" title="צורה — סטודיו תלת־ממד">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <rect x="2" y="2" width="28" height="28" rx="7" fill="var(--accent)"/>
+        <path d="M10 11h12v3h-8l8 7v3H10v-3h8l-8-7z" fill="#fff"/>
+      </svg>
+      <span class="brand-name">צורה</span>
+    </div>
+    <div class="doc-name-wrap">
+      <input id="doc-name" class="doc-name" value="מודל ללא שם" spellcheck="false" aria-label="שם המסמך">
+      <span id="dirty-dot" class="dirty-dot" title="שינויים שלא נשמרו" hidden></span>
+    </div>
+  </div>
+
+  <div class="appbar-group appbar-center">
+    <button id="btn-undo" class="icon-btn" title="בטל (Ctrl+Z)" disabled data-icon="undo"></button>
+    <button id="btn-redo" class="icon-btn" title="בצע שוב (Ctrl+Y)" disabled data-icon="redo"></button>
+    <span class="v-sep"></span>
+    <button id="btn-frame-all" class="icon-btn" title="מסגר הכל (Shift+F)" data-icon="frame"></button>
+    <button id="btn-focus-sel" class="icon-btn" title="התמקד בבחירה (F)" data-icon="focus"></button>
+  </div>
+
+  <div class="appbar-group appbar-end">
+    <button id="btn-open" class="bar-btn" title="פתח פרויקט (Ctrl+O)"><span class="i" data-icon="open"></span><span class="lbl">פתח</span></button>
+    <button id="btn-save" class="bar-btn" title="שמור פרויקט (Ctrl+S)"><span class="i" data-icon="save"></span><span class="lbl">שמור</span></button>
+    <span class="v-sep"></span>
+    <button id="btn-import" class="bar-btn" title="ייבוא STL / OBJ"><span class="i" data-icon="import"></span><span class="lbl">ייבוא</span></button>
+    <button id="btn-export" class="bar-btn bar-btn-primary" title="ייצוא STL / OBJ / PLY / GLB"><span class="i" data-icon="export"></span><span class="lbl">ייצוא</span></button>
+    <span class="v-sep"></span>
+    <button id="btn-record" class="bar-btn bar-btn-rec" title="הפקת סרטון — Turntable או Build Replay"><span class="i" data-icon="record"></span><span class="lbl">סרטון</span></button>
+    <button id="btn-settings" class="icon-btn" title="הגדרות" data-icon="settings"></button>
+  </div>
+</header>
+
+<!-- ══════════════════ אזור עבודה ══════════════════ -->
+<div id="workspace" class="workspace">
+
+  <!-- ── סרגל כלים ימני ── -->
+  <nav id="toolrail" class="toolrail" aria-label="כלים">
+    <div class="tool-section">
+      <button class="tool-btn is-active" id="tool-select" data-tool="select" title="בחירה (Q)" data-icon="cursor"></button>
+      <button class="tool-btn" id="tool-move" data-tool="move" title="הזזה (W)" data-icon="move"></button>
+      <button class="tool-btn" id="tool-rotate" data-tool="rotate" title="סיבוב (E)" data-icon="rotate"></button>
+      <button class="tool-btn" id="tool-scale" data-tool="scale" title="קנה מידה (R)" data-icon="scale"></button>
+    </div>
+    <div class="tool-sep"></div>
+    <div class="tool-section">
+      <button class="tool-btn" id="tool-primitives" title="גופים בסיסיים (A)" data-icon="shapes" aria-haspopup="true"></button>
+    </div>
+    <div class="tool-sep"></div>
+    <div class="tool-section" aria-label="פעולות בוליאניות">
+      <button class="tool-btn" id="op-union" title="איחוד גופים — בחר שני גופים או יותר" data-icon="union"></button>
+      <button class="tool-btn" id="op-subtract" title="חיסור — הגוף האחרון מוחסר מהראשון" data-icon="subtract"></button>
+      <button class="tool-btn" id="op-intersect" title="חיתוך — נפח משותף בלבד" data-icon="intersect"></button>
+    </div>
+    <div class="tool-sep"></div>
+    <div class="tool-section">
+      <button class="tool-btn" id="tool-section" title="מבט חתך (X)" data-icon="section"></button>
+      <button class="tool-btn" id="tool-measure" title="מדידה (M)" data-icon="ruler"></button>
+    </div>
+    <div class="tool-spacer"></div>
+    <div class="tool-section">
+      <button class="tool-btn" id="btn-duplicate" title="שכפול (Ctrl+D)" data-icon="duplicate"></button>
+      <button class="tool-btn tool-btn-danger" id="btn-delete" title="מחיקה (Delete)" data-icon="trash"></button>
+    </div>
+  </nav>
+
+  <!-- תפריט צף לגופים בסיסיים -->
+  <div id="primitives-flyout" class="flyout" hidden>
+    <div class="flyout-title">גופים בסיסיים</div>
+    <div class="flyout-grid">
+      <button class="prim-btn" data-prim="box"      title="תיבה"><span class="i" data-icon="prim-box"></span><span>תיבה</span></button>
+      <button class="prim-btn" data-prim="cylinder" title="גליל"><span class="i" data-icon="prim-cylinder"></span><span>גליל</span></button>
+      <button class="prim-btn" data-prim="sphere"   title="כדור"><span class="i" data-icon="prim-sphere"></span><span>כדור</span></button>
+      <button class="prim-btn" data-prim="cone"     title="חרוט"><span class="i" data-icon="prim-cone"></span><span>חרוט</span></button>
+      <button class="prim-btn" data-prim="torus"    title="טבעת"><span class="i" data-icon="prim-torus"></span><span>טבעת</span></button>
+      <button class="prim-btn" data-prim="wedge"    title="טריז"><span class="i" data-icon="prim-wedge"></span><span>טריז</span></button>
+      <button class="prim-btn" data-prim="tube"     title="צינור"><span class="i" data-icon="prim-tube"></span><span>צינור</span></button>
+      <button class="prim-btn" data-prim="capsule"  title="קפסולה"><span class="i" data-icon="prim-capsule"></span><span>קפסולה</span></button>
+      <button class="prim-btn" data-prim="prism"    title="מנסרה"><span class="i" data-icon="prim-prism"></span><span>מנסרה</span></button>
+      <button class="prim-btn" data-prim="pyramid"  title="פירמידה"><span class="i" data-icon="prim-pyramid"></span><span>פירמידה</span></button>
+      <button class="prim-btn" data-prim="ring"     title="דיסקה"><span class="i" data-icon="prim-ring"></span><span>דיסקה</span></button>
+      <button class="prim-btn" data-prim="gear"     title="גלגל שיניים"><span class="i" data-icon="prim-gear"></span><span>ג. שיניים</span></button>
+    </div>
+  </div>
+
+  <!-- ── קנבס ── -->
+  <main id="viewport-wrap" class="viewport-wrap">
+    <canvas id="viewport" tabindex="0" aria-label="קנבס תלת־ממד"></canvas>
+
+    <!-- קוביית ניווט -->
+    <div id="viewcube-wrap" class="viewcube-wrap" title="קוביית ניווט — לחץ על פאה למעבר מבט">
+      <div id="viewcube" class="viewcube">
+        <div class="vc-face vc-front"  data-view="front">קדמי</div>
+        <div class="vc-face vc-back"   data-view="back">אחורי</div>
+        <div class="vc-face vc-right"  data-view="right">ימין</div>
+        <div class="vc-face vc-left"   data-view="left">שמאל</div>
+        <div class="vc-face vc-top"    data-view="top">עליון</div>
+        <div class="vc-face vc-bottom" data-view="bottom">תחתון</div>
+      </div>
+    </div>
+
+    <!-- בקרי תצוגה צפים -->
+    <div id="view-controls" class="view-controls">
+      <button id="btn-cam-mode" class="vc-btn" title="פרספקטיבה / אורתוגרפי (Numpad 5)" data-icon="camera"><span id="cam-mode-label">פרספקטיבה</span></button>
+      <span class="vc-sep"></span>
+      <button id="btn-view-iso"   class="vc-btn vc-btn-sq" title="מבט איזומטרי (Home)">ISO</button>
+      <button id="btn-grid"       class="vc-btn vc-btn-sq is-on" title="רשת (G)" data-icon="grid"></button>
+      <button id="btn-wireframe"  class="vc-btn vc-btn-sq" title="מסגרת קווית (Z)" data-icon="wire"></button>
+      <button id="btn-shadows"    class="vc-btn vc-btn-sq is-on" title="צללים" data-icon="shadow"></button>
+    </div>
+
+    <!-- פאנל חתך -->
+    <div id="section-panel" class="mini-panel" hidden>
+      <div class="mini-panel-head">
+        <span class="mini-panel-title">מבט חתך</span>
+        <button class="mini-close" id="section-close" title="סגור">✕</button>
+      </div>
+      <div class="mini-row seg-row">
+        <div class="seg" id="section-axis">
+          <button data-axis="x" class="seg-btn">X</button>
+          <button data-axis="y" class="seg-btn">Y</button>
+          <button data-axis="z" class="seg-btn is-active">Z</button>
+        </div>
+        <button class="chip-btn" id="section-flip" title="הפוך כיוון" data-icon="flip"></button>
+      </div>
+      <div class="mini-row">
+        <input type="range" id="section-offset" min="-100" max="100" step="0.5" value="0">
+        <input type="text" class="num-input num-sm" id="section-offset-num" value="0" inputmode="decimal">
+        <span class="unit-label" data-unit-label>מ"מ</span>
+      </div>
+      <label class="mini-check"><input type="checkbox" id="section-enable"> חתך פעיל</label>
+    </div>
+
+    <!-- שכבת מדידה -->
+    <div id="measure-layer" class="measure-layer" hidden>
+      <svg id="measure-svg" width="100%" height="100%"></svg>
+      <div id="measure-label" class="measure-label" hidden></div>
+      <div id="measure-hint" class="measure-hint">בחר נקודה ראשונה על גוף…</div>
+    </div>
+
+    <!-- חיווי הקלטה -->
+    <div id="rec-indicator" class="rec-indicator" hidden>
+      <span class="rec-dot"></span>
+      <span id="rec-time">00:00</span>
+      <button id="rec-stop" class="rec-stop-btn">עצור</button>
+    </div>
+
+    <!-- טוסטים -->
+    <div id="toasts" class="toasts" aria-live="polite"></div>
+
+    <!-- אזור גרירת קבצים -->
+    <div id="drop-overlay" class="drop-overlay" hidden>
+      <div class="drop-box"><span class="i" data-icon="import"></span> שחרר כאן קובץ STL / OBJ / TSURA</div>
+    </div>
+  </main>
+
+  <!-- ── פאנל מאפיינים שמאלי ── -->
+  <aside id="inspector" class="inspector">
+    <div class="inspector-tabs" role="tablist">
+      <button class="tab is-active" id="tab-props" role="tab">מאפיינים</button>
+      <button class="tab" id="tab-tree" role="tab">עץ הסצנה</button>
+      <button class="inspector-collapse" id="btn-collapse-inspector" title="כווץ פאנל" data-icon="panel"></button>
+    </div>
+
+    <!-- מאפיינים -->
+    <div class="inspector-body" id="props-panel" role="tabpanel">
+      <div id="props-empty" class="props-empty">
+        <div class="props-empty-art" data-icon="cursor-lg"></div>
+        <p>בחר גוף בקנבס<br>כדי לערוך את מאפייניו</p>
+      </div>
+
+      <div id="props-content" hidden>
+        <section class="prop-group">
+          <header class="prop-group-head">כללי</header>
+          <div class="prop-row">
+            <label for="prop-name">שם</label>
+            <input id="prop-name" class="text-input" spellcheck="false">
+          </div>
+          <div class="prop-row">
+            <label>צבע</label>
+            <div class="color-row">
+              <input type="color" id="prop-color" class="color-input" value="#8fa3bf">
+              <div class="swatches" id="color-swatches"></div>
+            </div>
+          </div>
+          <div class="prop-row">
+            <label for="prop-roughness">חספוס</label>
+            <input type="range" id="prop-roughness" min="0" max="1" step="0.01" value="0.45">
+            <span class="range-val mono" id="prop-roughness-val">0.45</span>
+          </div>
+          <div class="prop-row">
+            <label for="prop-metalness">מתכתיות</label>
+            <input type="range" id="prop-metalness" min="0" max="1" step="0.01" value="0.1">
+            <span class="range-val mono" id="prop-metalness-val">0.10</span>
+          </div>
+          <div class="prop-row">
+            <label for="prop-opacity">אטימות</label>
+            <input type="range" id="prop-opacity" min="0.1" max="1" step="0.01" value="1">
+            <span class="range-val mono" id="prop-opacity-val">1.00</span>
+          </div>
+        </section>
+
+        <section class="prop-group">
+          <header class="prop-group-head">מיקום <span class="unit-tag" data-unit-label>מ"מ</span></header>
+          <div class="vec-row">
+            <div class="vec-field"><span class="axis-tag ax-x">X</span><input class="num-input" id="pos-x" inputmode="decimal"></div>
+            <div class="vec-field"><span class="axis-tag ax-y">Y</span><input class="num-input" id="pos-y" inputmode="decimal"></div>
+            <div class="vec-field"><span class="axis-tag ax-z">Z</span><input class="num-input" id="pos-z" inputmode="decimal"></div>
+          </div>
+        </section>
+
+        <section class="prop-group">
+          <header class="prop-group-head">סיבוב <span class="unit-tag">מעלות</span></header>
+          <div class="vec-row">
+            <div class="vec-field"><span class="axis-tag ax-x">X</span><input class="num-input" id="rot-x" inputmode="decimal"></div>
+            <div class="vec-field"><span class="axis-tag ax-y">Y</span><input class="num-input" id="rot-y" inputmode="decimal"></div>
+            <div class="vec-field"><span class="axis-tag ax-z">Z</span><input class="num-input" id="rot-z" inputmode="decimal"></div>
+          </div>
+        </section>
+
+        <section class="prop-group">
+          <header class="prop-group-head">מידות כוללות <span class="unit-tag" data-unit-label>מ"מ</span></header>
+          <div class="vec-row">
+            <div class="vec-field"><span class="axis-tag ax-x">א</span><input class="num-input" id="dim-x" inputmode="decimal" title="אורך (X)"></div>
+            <div class="vec-field"><span class="axis-tag ax-y">ג</span><input class="num-input" id="dim-y" inputmode="decimal" title="גובה (Y)"></div>
+            <div class="vec-field"><span class="axis-tag ax-z">ר</span><input class="num-input" id="dim-z" inputmode="decimal" title="רוחב (Z)"></div>
+          </div>
+          <label class="mini-check" style="margin-top:6px"><input type="checkbox" id="dim-uniform" checked> שמור יחס מידות</label>
+        </section>
+
+        <section class="prop-group" id="param-group" hidden>
+          <header class="prop-group-head">פרמטרים <span class="unit-tag" data-unit-label>מ"מ</span></header>
+          <div id="param-fields"></div>
+        </section>
+
+        <section class="prop-group">
+          <header class="prop-group-head">מידע</header>
+          <div class="info-grid mono" id="prop-info"></div>
+        </section>
+      </div>
+    </div>
+
+    <!-- עץ סצנה -->
+    <div class="inspector-body" id="tree-panel" role="tabpanel" hidden>
+      <div class="tree-toolbar">
+        <span id="tree-count" class="tree-count">0 גופים</span>
+        <button class="chip-btn" id="tree-show-all" title="הצג הכל" data-icon="eye"></button>
+      </div>
+      <ul id="scene-tree" class="scene-tree"></ul>
+    </div>
+  </aside>
+
+  <button id="btn-expand-inspector" class="expand-inspector" title="פתח פאנל מאפיינים" hidden data-icon="panel"></button>
+</div>
+
+<!-- ══════════════════ רצועת היסטוריה ══════════════════ -->
+<div id="history-strip" class="history-strip">
+  <button id="history-toggle" class="history-toggle" title="הצג / הסתר היסטוריה" data-icon="history"><span id="history-count">0</span></button>
+  <div id="history-cards" class="history-cards"></div>
+</div>
+
+<!-- ══════════════════ שורת סטטוס ══════════════════ -->
+<footer id="statusbar" class="statusbar">
+  <div class="status-group">
+    <span class="status-item mono" id="status-coords" title="מיקום סמן על מישור העבודה">X 0.0 · Y 0.0 · Z 0.0</span>
+  </div>
+  <div class="status-group">
+    <label class="status-item status-check" title="הצמדה לרשת (Ctrl בזמן גרירה — ביטול זמני)"><input type="checkbox" id="snap-grid" checked> הצמדה <span class="mono" id="snap-grid-val">1</span><span data-unit-label>מ"מ</span></label>
+    <label class="status-item status-check" title="הצמדת זווית"><input type="checkbox" id="snap-angle" checked> זווית <span class="mono">15°</span></label>
+  </div>
+  <div class="status-group">
+    <span class="status-item" id="status-selection">אין בחירה</span>
+    <span class="status-sep"></span>
+    <span class="status-item mono" id="status-stats">0 גופים · 0 משולשים</span>
+    <span class="status-sep"></span>
+    <div class="unit-select-wrap">
+      <select id="unit-select" class="unit-select" title="יחידות מידה">
+        <option value="mm" selected>מילימטרים</option>
+        <option value="cm">סנטימטרים</option>
+        <option value="in">אינצ'ים</option>
+      </select>
+    </div>
+  </div>
+</footer>
+
+<!-- ══════════════════ דיאלוגים ══════════════════ -->
+
+<dialog id="dlg-export" class="dlg">
+  <form method="dialog" class="dlg-form">
+    <header class="dlg-head"><h2>ייצוא מודל</h2><button value="cancel" class="dlg-x" formnovalidate>✕</button></header>
+    <div class="dlg-body">
+      <div class="fmt-grid">
+        <label class="fmt-card"><input type="radio" name="fmt" value="stl-b" checked>
+          <span class="fmt-name">STL</span><span class="fmt-sub">בינארי · הדפסת תלת־ממד</span></label>
+        <label class="fmt-card"><input type="radio" name="fmt" value="stl-a">
+          <span class="fmt-name">STL</span><span class="fmt-sub">טקסט (ASCII)</span></label>
+        <label class="fmt-card"><input type="radio" name="fmt" value="obj">
+          <span class="fmt-name">OBJ + MTL</span><span class="fmt-sub">גיאומטריה + חומרים</span></label>
+        <label class="fmt-card"><input type="radio" name="fmt" value="ply">
+          <span class="fmt-name">PLY</span><span class="fmt-sub">בינארי · צבעי קודקוד</span></label>
+        <label class="fmt-card"><input type="radio" name="fmt" value="glb">
+          <span class="fmt-name">GLB</span><span class="fmt-sub">glTF בינארי · AR / רשת</span></label>
+        <label class="fmt-card"><input type="radio" name="fmt" value="tsura">
+          <span class="fmt-name">TSURA</span><span class="fmt-sub">קובץ פרויקט מלא</span></label>
+      </div>
+      <div class="dlg-opts">
+        <label class="dlg-opt"><input type="radio" name="scope" value="all" checked> כל הסצנה</label>
+        <label class="dlg-opt"><input type="radio" name="scope" value="selection" id="export-scope-sel" disabled> הבחירה בלבד</label>
+      </div>
+      <p class="dlg-note" id="export-note">STL בינארי — הפורמט המקובל להדפסת תלת־ממד. היחידות נשמרות במילימטרים.</p>
+    </div>
+    <footer class="dlg-foot">
+      <button value="cancel" class="btn" formnovalidate>ביטול</button>
+      <button value="ok" class="btn btn-primary" id="export-confirm">ייצוא</button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog id="dlg-record" class="dlg">
+  <form method="dialog" class="dlg-form">
+    <header class="dlg-head"><h2>הפקת סרטון</h2><button value="cancel" class="dlg-x" formnovalidate>✕</button></header>
+    <div class="dlg-body">
+      <div class="fmt-grid fmt-grid-2">
+        <label class="fmt-card"><input type="radio" name="recmode" value="turntable" checked>
+          <span class="fmt-name">Turntable</span><span class="fmt-sub">סיבוב 360° של המודל</span></label>
+        <label class="fmt-card"><input type="radio" name="recmode" value="replay">
+          <span class="fmt-name">Build Replay</span><span class="fmt-sub">שחזור תהליך הבנייה</span></label>
+      </div>
+      <div class="dlg-fields">
+        <div class="dlg-field">
+          <label for="rec-duration">משך (שניות)</label>
+          <input type="number" id="rec-duration" class="num-input" value="8" min="3" max="60" step="1">
+        </div>
+        <div class="dlg-field">
+          <label for="rec-quality">איכות</label>
+          <select id="rec-quality" class="unit-select">
+            <option value="8">רגילה (8 Mbps)</option>
+            <option value="16" selected>גבוהה (16 Mbps)</option>
+            <option value="32">מקסימלית (32 Mbps)</option>
+          </select>
+        </div>
+        <div class="dlg-field">
+          <label for="rec-orbit">סיבוב מצלמה ב־Replay</label>
+          <select id="rec-orbit" class="unit-select">
+            <option value="slow" selected>איטי</option>
+            <option value="none">ללא</option>
+            <option value="full">מלא</option>
+          </select>
+        </div>
+      </div>
+      <p class="dlg-note">הסרטון מוקלט ישירות מהקנבס באיכות מלאה ויורד כקובץ WebM. ממשק המשתמש אינו מוקלט — רק המודל.</p>
+    </div>
+    <footer class="dlg-foot">
+      <button value="cancel" class="btn" formnovalidate>ביטול</button>
+      <button value="ok" class="btn btn-primary">התחל הקלטה</button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog id="dlg-settings" class="dlg">
+  <form method="dialog" class="dlg-form">
+    <header class="dlg-head"><h2>הגדרות</h2><button value="cancel" class="dlg-x" formnovalidate>✕</button></header>
+    <div class="dlg-body">
+      <div class="dlg-fields">
+        <div class="dlg-field">
+          <label for="set-snap-size">גודל הצמדה (<span data-unit-label>מ"מ</span>)</label>
+          <input type="number" id="set-snap-size" class="num-input" value="1" min="0.1" step="0.1">
+        </div>
+        <div class="dlg-field">
+          <label for="set-grid-size">גודל רשת (<span data-unit-label>מ"מ</span>)</label>
+          <input type="number" id="set-grid-size" class="num-input" value="200" min="50" step="50">
+        </div>
+        <div class="dlg-field">
+          <label for="set-quality">חלקות גיאומטריה</label>
+          <select id="set-quality" class="unit-select">
+            <option value="low">חסכונית</option>
+            <option value="med" selected>רגילה</option>
+            <option value="high">גבוהה</option>
+          </select>
+        </div>
+      </div>
+      <label class="mini-check"><input type="checkbox" id="set-autosave" checked> שמירה אוטומטית לדפדפן</label>
+      <label class="mini-check"><input type="checkbox" id="set-edges" checked> הדגשת קצוות גופים</label>
+    </div>
+    <footer class="dlg-foot">
+      <button value="ok" class="btn btn-primary">סגור</button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- תפריט הקשר -->
+<div id="context-menu" class="context-menu" hidden>
+  <button data-action="duplicate"><span class="i" data-icon="duplicate"></span>שכפל<kbd>Ctrl+D</kbd></button>
+  <button data-action="focus"><span class="i" data-icon="focus"></span>התמקד<kbd>F</kbd></button>
+  <button data-action="hide"><span class="i" data-icon="eye-off"></span>הסתר<kbd>H</kbd></button>
+  <button data-action="ground"><span class="i" data-icon="ground"></span>הצמד לרצפה</button>
+  <button data-action="center"><span class="i" data-icon="center"></span>מרכז בראשית</button>
+  <div class="ctx-sep"></div>
+  <button data-action="delete" class="ctx-danger"><span class="i" data-icon="trash"></span>מחק<kbd>Del</kbd></button>
+</div>
+
+<input type="file" id="file-input" accept=".stl,.obj,.tsura,.json" multiple hidden>
+<input type="file" id="project-input" accept=".tsura,.json" hidden>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

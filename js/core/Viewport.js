@@ -299,8 +299,8 @@ export class Viewport extends EventTarget {
       back:   new THREE.Vector3(0, 0.001, -1),
       right:  new THREE.Vector3(1, 0.001, 0),
       left:   new THREE.Vector3(-1, 0.001, 0),
-      top:    new THREE.Vector3(0.0001, 1, 0.0001),
-      bottom: new THREE.Vector3(0.0001, -1, 0.0001),
+      top:    new THREE.Vector3(0, 1, 0.0001),
+      bottom: new THREE.Vector3(0, -1, 0.0001),
       iso:    new THREE.Vector3(1, 0.82, 1.1).normalize(),
     };
     const dir = dirs[name] ?? dirs.iso;
@@ -400,6 +400,38 @@ export class Viewport extends EventTarget {
     this.raycaster.setFromCamera(this._pointer, this.camera);
     const hits = this.raycaster.intersectObjects(this.modelGroup.children, false);
     return hits.find((h) => h.object.visible) ?? null;
+  }
+
+  /** הטלת קרן למישור העבודה (Y=0) — לכלי הסקיצה */
+  raycastGround(clientX, clientY) {
+    const rect = this.canvas.getBoundingClientRect();
+    this._pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    this._pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+    this.raycaster.setFromCamera(this._pointer, this.camera);
+    const pt = new THREE.Vector3();
+    return this.raycaster.ray.intersectPlane(this._groundPlane, pt) ? pt : null;
+  }
+
+  /**
+   * לכידת תמונת PNG של הקנבס ברזולוציה מוגדלת.
+   * מרונדר סינכרונית לפני הלכידה כך שאין תלות ב-preserveDrawingBuffer.
+   * @returns {Promise<Blob>}
+   */
+  captureImage(scale = 2) {
+    const w = this.wrapper.clientWidth;
+    const h = this.wrapper.clientHeight;
+    const prevRatio = this.renderer.getPixelRatio();
+    this.renderer.setPixelRatio(1);
+    this.renderer.setSize(w * scale, h * scale, false);
+    this.renderer.render(this.scene, this.camera);
+    return new Promise((resolve, reject) => {
+      this.canvas.toBlob((blob) => {
+        this.renderer.setPixelRatio(prevRatio);
+        this._resize();
+        this.renderer.render(this.scene, this.camera);
+        blob ? resolve(blob) : reject(new Error('לכידת התמונה נכשלה'));
+      }, 'image/png');
+    });
   }
 
   /** המרת נקודת עולם לקואורדינטות מסך (פיקסלים) */

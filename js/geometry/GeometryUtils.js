@@ -265,6 +265,44 @@ export function triangleCount(geometry) {
   return Math.floor((geometry.index ? geometry.index.count : geometry.getAttribute('position')?.count ?? 0) / 3);
 }
 
+/**
+ * שיקוף גיאומטריה על מישור שנורמלו הוא הציר הנתון, דרך planeCoord.
+ * הליפוף (winding) מתהפך כדי לשמור על פאות כלפי חוץ, והנורמלים
+ * מחושבים מחדש עם זווית קיפול — תוצאה תקינה לכל גוף, בכל כיוון.
+ */
+export function mirrorGeometry(geometry, axis = 'x', planeCoord = 0) {
+  const g = (geometry.index ? geometry.toNonIndexed() : geometry.clone());
+  const pos = g.getAttribute('position');
+  const ai = { x: 0, y: 1, z: 2 }[axis] ?? 0;
+
+  const arr = pos.array;
+  for (let i = 0; i < pos.count; i++) {
+    arr[i * 3 + ai] = 2 * planeCoord - arr[i * 3 + ai];
+  }
+
+  // היפוך סדר קודקודים בכל משולש — משמר כיווניות פאות
+  const tmp = new Float32Array(3);
+  for (let t = 0; t < pos.count; t += 3) {
+    for (let j = 0; j < 3; j++) {
+      tmp[j] = arr[(t + 1) * 3 + j];
+      arr[(t + 1) * 3 + j] = arr[(t + 2) * 3 + j];
+      arr[(t + 2) * 3 + j] = tmp[j];
+    }
+  }
+  pos.needsUpdate = true;
+
+  g.deleteAttribute('normal');
+  g.deleteAttribute('uv');
+  g.computeBoundingSphere();
+  const tol = Math.max((g.boundingSphere?.radius ?? 1) * 1e-7, 1e-8);
+  const merged = BufferGeometryUtils.mergeVertices(g, tol);
+  const creased = BufferGeometryUtils.toCreasedNormals(merged, THREE.MathUtils.degToRad(30));
+  const compact = BufferGeometryUtils.mergeVertices(creased, 0);
+  compact.computeBoundingBox();
+  compact.computeBoundingSphere();
+  return compact;
+}
+
 /** מוודא שלגיאומטריה יש תכונות position+normal בלבד באותו פורמט (לקלט CSG) */
 export function normalizeForCSG(geometry) {
   const g = geometry.clone();

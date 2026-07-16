@@ -285,6 +285,13 @@ kbd {
 }
 .chip-btn:hover { color: var(--accent); border-color: var(--accent); }
 .chip-btn svg { width: 14px; height: 14px; }
+.mini-row-end { justify-content: flex-end; }
+.mini-inline-label { font-size: var(--fs-s); color: var(--text-2); flex-shrink: 0; }
+.sketch-hint {
+  font-size: var(--fs-xs); color: var(--text-3); line-height: 1.55;
+  background: var(--bg-panel-2); border-radius: var(--radius-s); padding: 7px 10px;
+}
+.btn-sm { height: 28px; padding: 0 12px; font-size: var(--fs-xs); }
 .mini-check { display: flex; align-items: center; gap: 7px; font-size: var(--fs-s); color: var(--text-2); cursor: pointer; }
 .mini-check input { accent-color: var(--accent); }
 .unit-label { font-size: var(--fs-xs); color: var(--text-3); flex-shrink: 0; }

@@ -153,6 +153,16 @@ export class VisibilityCommand extends Command {
   undo() { this.obj.visible = !this.visible; this.scene.notifyObjectChanged(this.obj); }
 }
 
+export class CompositeCommand extends Command {
+  /** מספר פקודות כיחידה אטומית אחת בהיסטוריה */
+  constructor(label, icon, commands) {
+    super(label, icon);
+    this.commands = commands;
+  }
+  execute() { this.commands.forEach((c) => c.execute()); }
+  undo() { [...this.commands].reverse().forEach((c) => c.undo()); }
+}
+
 /* ── היסטוריה ── */
 
 export class History extends EventTarget {

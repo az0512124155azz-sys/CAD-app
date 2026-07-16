@@ -8,8 +8,10 @@ import { Viewport } from './core/Viewport.js';
 import { SceneManager, SceneObject } from './core/SceneManager.js';
 import {
   History, AddObjectCommand, DeleteObjectsCommand, TransformCommand,
-  BooleanCommand, VisibilityCommand,
+  BooleanCommand, VisibilityCommand, CompositeCommand,
 } from './core/Commands.js';
+import { mirrorGeometry } from './geometry/GeometryUtils.js';
+import { SketchTool } from './tools/SketchTool.js';
 import { UnitSystem } from './core/Units.js';
 import { buildPrimitive, PRIMITIVES, defaultParams } from './geometry/Primitives.js';
 import { booleanEngine, BOOLEAN_LABELS } from './geometry/BooleanEngine.js';
@@ -64,6 +66,9 @@ class App {
       label: $('measure-label'),
       hint: $('measure-hint'),
     });
+    this.sketch = new SketchTool(this.viewport, this.units, {
+      getSnap: () => ($('snap-grid').checked ? this.settings.snapSize : null),
+    });
 
     /* ── UI ── */
     this.inspector = new Inspector({
@@ -79,6 +84,8 @@ class App {
     this._bindViewportEvents();
     this._bindGizmo();
     this._bindToolbar();
+    this._bindSketch();
+    this._bindPatternAndMirror();
     this._bindAppbar();
     this._bindViewControls();
     this._bindViewCube();
@@ -145,6 +152,8 @@ class App {
     $('op-intersect').disabled = !boolEnabled;
     $('btn-duplicate').disabled = sel.length === 0;
     $('btn-delete').disabled = sel.length === 0;
+    $('tool-pattern').disabled = sel.length === 0;
+    $('tool-mirror').disabled = sel.length === 0;
     $('export-scope-sel').disabled = sel.length === 0;
 
     this.inspector.refresh();
@@ -168,6 +177,8 @@ class App {
 
     this.viewport.addEventListener('pick', (e) => {
       const { mesh, additive, button, clientX, clientY } = e.detail;
+
+      if (this.sketch.active) return; // הסקיצה מטפלת בקלט בעצמה
 
       if (this.activeTool === 'measure') {
         this.measure.handlePick(e.detail);
@@ -321,6 +332,255 @@ class App {
     $('btn-delete').addEventListener('click', () => this.deleteSelection());
   }
 
+  /* ═══════════════ סקיצה ואקסטרוזיה ═══════════════ */
+
+  _bindSketch() {
+    const panel = $('sketch-panel');
+    const hints = {
+      polygon: 'לחץ על הקנבס להוספת נקודות; סגור בלחיצה על הנקודה הראשונה או בכפתור "סיים ומשוך"',
+      rect: 'לחץ לקביעת פינה ראשונה, ואז לחץ לקביעת הפינה הנגדית',
+      circle: 'לחץ לקביעת מרכז המעגל, ואז לחץ לקביעת הרדיוס',
+    };
+
+    const open = () => {
+      this.setTool('select');
+      this.scene.clearSelection();
+      panel.hidden = false;
+      $('tool-sketch').classList.add('is-active');
+      this._syncSketchHeight();
+      this.sketch.start(panel.querySelector('#sketch-mode .is-active').dataset.mode);
+    };
+    const close = () => {
+      panel.hidden = true;
+      $('tool-sketch').classList.remove('is-active');
+      this.sketch.stop();
+    };
+
+    $('tool-sketch').addEventListener('click', () => (this.sketch.active ? close() : open()));
+    $('sketch-close').addEventListener('click', close);
+    $('sketch-cancel').addEventListener('click', close);
+
+    $('sketch-mode').querySelectorAll('[data-mode]').forEach((b) => {
+      b.addEventListener('click', () => {
+        $('sketch-mode').querySelectorAll('button').forEach((x) => x.classList.remove('is-active'));
+        b.classList.add('is-active');
+        $('sketch-hint').textContent = hints[b.dataset.mode];
+        this.sketch.setMode(b.dataset.mode);
+      });
+    });
+
+    $('sketch-height').addEventListener('change', () => this._syncSketchHeight());
+    $('sketch-finish').addEventListener('click', () => {
+      this._syncSketchHeight();
+      this.sketch.finish();
+    });
+
+    this.sketch.addEventListener('state', (e) => {
+      $('sketch-finish').disabled = !e.detail.canFinish;
+    });
+    this.sketch.addEventListener('invalid', (e) => this.toasts.error(e.detail.reason));
+    this.sketch.addEventListener('commit', (e) => {
+      const { geometry, position, mode } = e.detail;
+      const names = { polygon: 'אקסטרוזיה', rect: 'לוח', circle: 'דיסק' };
+      const obj = new SceneObject({
+        type: 'sketch',
+        geometry,
+        name: this._uniqueName(names[mode] ?? 'אקסטרוזיה'),
+      });
+      obj.mesh.position.copy(position);
+      obj.setEdgesVisible(this.settings.edges && !this.wireframe);
+      this._applyWireframe(obj);
+      this.history.execute(new AddObjectCommand(this.scene, obj, `סקיצה → ${obj.name}`, 'sketch'));
+      close();
+      this.scene.setSelection([obj.id]);
+    });
+
+    // Esc בזמן סקיצה — ביטול
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.sketch.active) close();
+    });
+  }
+
+  _syncSketchHeight() {
+    const mm = this.units.parse($('sketch-height').value);
+    if (mm !== null && mm > 0) this.sketch.setHeight(mm);
+    else $('sketch-height').value = this.units.format(20);
+  }
+
+  /* ═══════════════ מערך ושיקוף ═══════════════ */
+
+  _bindPatternAndMirror() {
+    /* מערך */
+    const dlgPat = $('dlg-pattern');
+    $('tool-pattern').addEventListener('click', () => {
+      if (!this.scene.selection.size) {
+        this.toasts.info('בחר גוף אחד לפחות ליצירת מערך');
+        return;
+      }
+      dlgPat.showModal();
+    });
+    dlgPat.querySelectorAll('input[name="pattype"]').forEach((r) => {
+      r.addEventListener('change', () => {
+        $('pat-linear-fields').hidden = r.value !== 'linear';
+        $('pat-circular-fields').hidden = r.value !== 'circular';
+      });
+    });
+    dlgPat.addEventListener('close', () => {
+      if (dlgPat.returnValue !== 'ok') return;
+      const type = dlgPat.querySelector('input[name="pattype"]:checked').value;
+      this.runPattern(type);
+    });
+
+    /* שיקוף */
+    const dlgMir = $('dlg-mirror');
+    $('tool-mirror').addEventListener('click', () => {
+      if (!this.scene.selection.size) {
+        this.toasts.info('בחר גוף לשיקוף');
+        return;
+      }
+      dlgMir.showModal();
+    });
+    $('mirror-axis').querySelectorAll('[data-axis]').forEach((b) => {
+      b.addEventListener('click', () => {
+        $('mirror-axis').querySelectorAll('button').forEach((x) => x.classList.remove('is-active'));
+        b.classList.add('is-active');
+      });
+    });
+    dlgMir.addEventListener('close', () => {
+      if (dlgMir.returnValue !== 'ok') return;
+      this.runMirror(
+        $('mirror-axis').querySelector('.is-active').dataset.axis,
+        $('mirror-plane').value,
+        $('mirror-keep').checked
+      );
+    });
+  }
+
+  /** שכפול עמוק של גוף — גיאומטריה, חומר ופרמטרים */
+  _cloneObject(src) {
+    const clone = new SceneObject({
+      type: src.type,
+      geometry: src.mesh.geometry.clone(),
+      params: src.params ? { ...src.params } : null,
+      name: this._uniqueName(src.name),
+      color: `#${src.mesh.material.color.getHexString()}`,
+    });
+    const m = src.mesh.material;
+    clone.mesh.material.roughness = m.roughness;
+    clone.mesh.material.metalness = m.metalness;
+    clone.mesh.material.opacity = m.opacity;
+    clone.mesh.material.transparent = m.transparent;
+    clone.applyTransform(src.snapshotTransform());
+    clone.setEdgesVisible(this.settings.edges && !this.wireframe);
+    this._applyWireframe(clone);
+    return clone;
+  }
+
+  runPattern(type) {
+    const sel = this.scene.selectedObjects();
+    if (!sel.length) return;
+
+    const count = Math.min(Math.max(parseInt($('pat-count').value, 10) || 2, 2), 60);
+    const clones = [];
+
+    if (type === 'linear') {
+      const dx = this.units.parse($('pat-dx').value) ?? 0;
+      const dy = this.units.parse($('pat-dy').value) ?? 0;
+      const dz = this.units.parse($('pat-dz').value) ?? 0;
+      if (dx === 0 && dy === 0 && dz === 0) {
+        this.toasts.error('קבע מרווח שונה מאפס לפחות בציר אחד');
+        return;
+      }
+      for (let k = 1; k < count; k++) {
+        for (const src of sel) {
+          const c = this._cloneObject(src);
+          c.mesh.position.x += dx * k;
+          c.mesh.position.y += dy * k;
+          c.mesh.position.z += dz * k;
+          clones.push(c);
+        }
+      }
+    } else {
+      const totalDeg = Math.min(Math.max(parseFloat($('pat-angle').value) || 360, 1), 360);
+      const rotateCopies = $('pat-rotate').checked;
+      const full = Math.abs(totalDeg - 360) < 1e-6;
+      // ב-360° המרווח הוא total/count (אחרת העותק האחרון נופל על הראשון)
+      const step = THREE.MathUtils.degToRad(full ? totalDeg / count : totalDeg / (count - 1));
+      const yAxis = new THREE.Vector3(0, 1, 0);
+      for (let k = 1; k < count; k++) {
+        const q = new THREE.Quaternion().setFromAxisAngle(yAxis, step * k);
+        for (const src of sel) {
+          const c = this._cloneObject(src);
+          c.mesh.position.applyQuaternion(q);
+          if (rotateCopies) c.mesh.quaternion.premultiply(q);
+          clones.push(c);
+        }
+      }
+    }
+
+    const scene = this.scene;
+    const label = type === 'linear' ? `מערך ליניארי ×${count}` : `מערך מעגלי ×${count}`;
+    this.history.execute(new CompositeCommand(
+      label, 'pattern',
+      clones.map((c) => new AddObjectCommand(scene, c))
+    ));
+    this.scene.setSelection([...sel, ...clones].map((o) => o.id));
+    this.toasts.success(`${label} נוצר — ${clones.length} עותקים`);
+  }
+
+  runMirror(axis, planeMode, keepOriginal) {
+    const sel = this.scene.selectedObjects();
+    if (!sel.length) return;
+
+    const commands = [];
+    const newIds = [];
+    try {
+      for (const src of sel) {
+        // אפיית הטרנספורם העולמי — שיקוף נכון בכל כיוון גוף
+        src.mesh.updateWorldMatrix(true, false);
+        const baked = src.mesh.geometry.clone().applyMatrix4(src.mesh.matrixWorld);
+        baked.computeBoundingBox();
+        const center = baked.boundingBox.getCenter(new THREE.Vector3());
+        const planeCoord = planeMode === 'center' ? center[axis] : 0;
+
+        const mirrored = mirrorGeometry(baked, axis, planeCoord);
+        baked.dispose();
+
+        // מרכוז הגיאומטריה והצבת ה-mesh במיקום העולמי החדש
+        mirrored.computeBoundingBox();
+        const newCenter = mirrored.boundingBox.getCenter(new THREE.Vector3());
+        mirrored.translate(-newCenter.x, -newCenter.y, -newCenter.z);
+        mirrored.computeBoundingBox();
+        mirrored.computeBoundingSphere();
+
+        const obj = new SceneObject({
+          type: 'mirrored',
+          geometry: mirrored,
+          name: this._uniqueName(`${src.name} משוקף`),
+          color: `#${src.mesh.material.color.getHexString()}`,
+        });
+        obj.mesh.material.roughness = src.mesh.material.roughness;
+        obj.mesh.material.metalness = src.mesh.material.metalness;
+        obj.mesh.position.copy(newCenter);
+        obj.setEdgesVisible(this.settings.edges && !this.wireframe);
+        this._applyWireframe(obj);
+
+        commands.push(new AddObjectCommand(this.scene, obj));
+        newIds.push(obj.id);
+      }
+      if (!keepOriginal) commands.push(new DeleteObjectsCommand(this.scene, sel));
+    } catch (err) {
+      this.toasts.error(`השיקוף נכשל: ${err.message}`);
+      return;
+    }
+
+    this.history.execute(new CompositeCommand(
+      sel.length === 1 ? `שיקוף ${sel[0].name}` : `שיקוף ${sel.length} גופים`,
+      'mirror', commands
+    ));
+    this.scene.setSelection(newIds);
+  }
+
   /* ═══════════════ פעולות על גופים ═══════════════ */
 
   addPrimitive(type) {
@@ -403,32 +663,16 @@ class App {
     const sel = this.scene.selectedObjects();
     if (!sel.length) return;
     const clones = sel.map((o) => {
-      const clone = new SceneObject({
-        type: o.type,
-        geometry: o.mesh.geometry.clone(),
-        params: o.params ? { ...o.params } : null,
-        name: this._uniqueName(o.name),
-        color: `#${o.mesh.material.color.getHexString()}`,
-      });
-      clone.mesh.material.roughness = o.mesh.material.roughness;
-      clone.mesh.material.metalness = o.mesh.material.metalness;
-      clone.mesh.material.opacity = o.mesh.material.opacity;
-      clone.mesh.material.transparent = o.mesh.material.transparent;
-      const t = o.snapshotTransform();
-      t.position.x += 15;
-      t.position.z += 15;
-      clone.applyTransform(t);
-      clone.setEdgesVisible(this.settings.edges && !this.wireframe);
-      this._applyWireframe(clone);
+      const clone = this._cloneObject(o);
+      clone.mesh.position.x += 15;
+      clone.mesh.position.z += 15;
       return clone;
     });
-    // פקודה אחת מרובת גופים
-    const scene = this.scene;
-    this.history.execute(new (class extends AddObjectCommand {
-      constructor() { super(scene, clones[0], clones.length === 1 ? `שכפול ${clones[0].name}` : `שכפול ${clones.length} גופים`, 'duplicate'); }
-      execute() { clones.forEach((c) => scene.add(c)); }
-      undo() { clones.forEach((c) => scene.remove(c)); }
-    })());
+    this.history.execute(new CompositeCommand(
+      clones.length === 1 ? `שכפול ${clones[0].name}` : `שכפול ${clones.length} גופים`,
+      'duplicate',
+      clones.map((c) => new AddObjectCommand(this.scene, c))
+    ));
     this.scene.setSelection(clones.map((c) => c.id));
   }
 
@@ -638,6 +882,7 @@ class App {
       ply: 'PLY בינארי — פורמט מחקרי נפוץ לסריקות וענני נקודות.',
       glb: 'GLB — קובץ glTF בינארי יחיד כולל חומרי PBR. מומר אוטומטית למטרים לפי התקן.',
       tsura: 'קובץ הפרויקט המלא של צורה — כולל פרמטרים, חומרים והיסטוריית עבודה ניתנת להמשך.',
+      png: 'תמונת רינדור של המבט הנוכחי ברזולוציה כפולה — מוכנה למצגות ולתיעוד.',
     };
     dlgExport.querySelectorAll('input[name="fmt"]').forEach((r) => {
       r.addEventListener('change', () => { $('export-note').textContent = notes[r.value]; });
@@ -646,6 +891,17 @@ class App {
       if (dlgExport.returnValue !== 'ok') return;
       const fmt = dlgExport.querySelector('input[name="fmt"]:checked').value;
       const scope = dlgExport.querySelector('input[name="scope"]:checked').value;
+      if (fmt === 'png') {
+        try {
+          const blob = await this.viewport.captureImage(2);
+          const { saveBlob } = await import('./io/Exporters.js');
+          saveBlob(blob, `${($('doc-name').value || 'model').trim()}.png`);
+          this.toasts.success('תמונת הרינדור ירדה למחשב');
+        } catch (err) {
+          this.toasts.error(err.message);
+        }
+        return;
+      }
       try {
         const n = await this.exporters.export(fmt, scope, $('doc-name').value,
           () => serializeProject(this.scene, this._projectMeta()));
@@ -832,6 +1088,7 @@ class App {
         case 'e': case 'E': this.setTool('rotate'); break;
         case 'r': case 'R': this.setTool('scale'); break;
         case 'a': case 'A': $('tool-primitives').click(); break;
+        case 's': case 'S': $('tool-sketch').click(); break;
         case 'm': case 'M': $('tool-measure').click(); break;
         case 'x': case 'X': $('tool-section').click(); break;
         case 'g': case 'G': $('btn-grid').click(); break;

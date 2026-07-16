@@ -70,12 +70,18 @@
     <div class="tool-sep"></div>
     <div class="tool-section">
       <button class="tool-btn" id="tool-primitives" title="גופים בסיסיים (A)" data-icon="shapes" aria-haspopup="true"></button>
+      <button class="tool-btn" id="tool-sketch" title="סקיצה ואקסטרוזיה (S) — שרטט על מישור העבודה ומשוך לגוף" data-icon="sketch"></button>
     </div>
     <div class="tool-sep"></div>
     <div class="tool-section" aria-label="פעולות בוליאניות">
       <button class="tool-btn" id="op-union" title="איחוד גופים — בחר שני גופים או יותר" data-icon="union"></button>
       <button class="tool-btn" id="op-subtract" title="חיסור — הגוף האחרון מוחסר מהראשון" data-icon="subtract"></button>
       <button class="tool-btn" id="op-intersect" title="חיתוך — נפח משותף בלבד" data-icon="intersect"></button>
+    </div>
+    <div class="tool-sep"></div>
+    <div class="tool-section" aria-label="שכפול מתקדם">
+      <button class="tool-btn" id="tool-pattern" title="מערך — שכפול ליניארי או מעגלי" data-icon="pattern"></button>
+      <button class="tool-btn" id="tool-mirror" title="שיקוף גוף על מישור" data-icon="mirror"></button>
     </div>
     <div class="tool-sep"></div>
     <div class="tool-section">
@@ -154,6 +160,31 @@
         <span class="unit-label" data-unit-label>מ"מ</span>
       </div>
       <label class="mini-check"><input type="checkbox" id="section-enable"> חתך פעיל</label>
+    </div>
+
+    <!-- פאנל סקיצה -->
+    <div id="sketch-panel" class="mini-panel" hidden>
+      <div class="mini-panel-head">
+        <span class="mini-panel-title">סקיצה ואקסטרוזיה</span>
+        <button class="mini-close" id="sketch-close" title="ביטול (Esc)">✕</button>
+      </div>
+      <div class="mini-row seg-row">
+        <div class="seg" id="sketch-mode">
+          <button data-mode="polygon" class="seg-btn is-active" title="מצולע חופשי">מצולע</button>
+          <button data-mode="rect" class="seg-btn" title="מלבן — שתי פינות">מלבן</button>
+          <button data-mode="circle" class="seg-btn" title="מעגל — מרכז ורדיוס">מעגל</button>
+        </div>
+      </div>
+      <div class="mini-row">
+        <label class="mini-inline-label" for="sketch-height">גובה</label>
+        <input type="text" class="num-input num-sm" id="sketch-height" value="20" inputmode="decimal">
+        <span class="unit-label" data-unit-label>מ"מ</span>
+      </div>
+      <div class="sketch-hint" id="sketch-hint">לחץ על הקנבס להוספת נקודות; סגור בלחיצה על הנקודה הראשונה</div>
+      <div class="mini-row mini-row-end">
+        <button class="btn btn-sm" id="sketch-cancel">ביטול</button>
+        <button class="btn btn-sm btn-primary" id="sketch-finish" disabled>סיים ומשוך</button>
+      </div>
     </div>
 
     <!-- שכבת מדידה -->
@@ -327,6 +358,8 @@
           <span class="fmt-name">GLB</span><span class="fmt-sub">glTF בינארי · AR / רשת</span></label>
         <label class="fmt-card"><input type="radio" name="fmt" value="tsura">
           <span class="fmt-name">TSURA</span><span class="fmt-sub">קובץ פרויקט מלא</span></label>
+        <label class="fmt-card"><input type="radio" name="fmt" value="png">
+          <span class="fmt-name">PNG</span><span class="fmt-sub">תמונת רינדור ×2</span></label>
       </div>
       <div class="dlg-opts">
         <label class="dlg-opt"><input type="radio" name="scope" value="all" checked> כל הסצנה</label>
@@ -378,6 +411,85 @@
     <footer class="dlg-foot">
       <button value="cancel" class="btn" formnovalidate>ביטול</button>
       <button value="ok" class="btn btn-primary">התחל הקלטה</button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog id="dlg-pattern" class="dlg">
+  <form method="dialog" class="dlg-form">
+    <header class="dlg-head"><h2>מערך</h2><button value="cancel" class="dlg-x" formnovalidate>✕</button></header>
+    <div class="dlg-body">
+      <div class="fmt-grid fmt-grid-2">
+        <label class="fmt-card"><input type="radio" name="pattype" value="linear" checked>
+          <span class="fmt-name">ליניארי</span><span class="fmt-sub">שכפול לאורך וקטור קבוע</span></label>
+        <label class="fmt-card"><input type="radio" name="pattype" value="circular">
+          <span class="fmt-name">מעגלי</span><span class="fmt-sub">שכפול סביב ציר אנכי דרך הראשית</span></label>
+      </div>
+      <div class="dlg-fields">
+        <div class="dlg-field">
+          <label for="pat-count">כמות כוללת</label>
+          <input type="number" id="pat-count" class="num-input" value="4" min="2" max="60" step="1">
+        </div>
+      </div>
+      <div class="dlg-fields" id="pat-linear-fields">
+        <div class="dlg-field">
+          <label>מרווח X (<span data-unit-label>מ"מ</span>)</label>
+          <input type="text" id="pat-dx" class="num-input" value="60" inputmode="decimal">
+        </div>
+        <div class="dlg-field">
+          <label>מרווח Y (<span data-unit-label>מ"מ</span>)</label>
+          <input type="text" id="pat-dy" class="num-input" value="0" inputmode="decimal">
+        </div>
+        <div class="dlg-field">
+          <label>מרווח Z (<span data-unit-label>מ"מ</span>)</label>
+          <input type="text" id="pat-dz" class="num-input" value="0" inputmode="decimal">
+        </div>
+      </div>
+      <div class="dlg-fields" id="pat-circular-fields" hidden>
+        <div class="dlg-field">
+          <label for="pat-angle">זווית כוללת (מעלות)</label>
+          <input type="number" id="pat-angle" class="num-input" value="360" min="1" max="360" step="1">
+        </div>
+        <div class="dlg-field">
+          <label class="mini-check" style="margin-top:22px"><input type="checkbox" id="pat-rotate" checked> סובב את העותקים</label>
+        </div>
+      </div>
+      <p class="dlg-note">המערך המעגלי סובב סביב ציר Y העובר בראשית הצירים — מקם את הגוף ברדיוס הרצוי לפני ההפעלה.</p>
+    </div>
+    <footer class="dlg-foot">
+      <button value="cancel" class="btn" formnovalidate>ביטול</button>
+      <button value="ok" class="btn btn-primary">צור מערך</button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog id="dlg-mirror" class="dlg">
+  <form method="dialog" class="dlg-form">
+    <header class="dlg-head"><h2>שיקוף</h2><button value="cancel" class="dlg-x" formnovalidate>✕</button></header>
+    <div class="dlg-body">
+      <div class="dlg-fields">
+        <div class="dlg-field">
+          <label>מישור השיקוף (ניצב לציר)</label>
+          <div class="seg" id="mirror-axis">
+            <button type="button" data-axis="x" class="seg-btn is-active">X</button>
+            <button type="button" data-axis="y" class="seg-btn">Y</button>
+            <button type="button" data-axis="z" class="seg-btn">Z</button>
+          </div>
+        </div>
+        <div class="dlg-field">
+          <label>מיקום המישור</label>
+          <select id="mirror-plane" class="unit-select">
+            <option value="origin" selected>דרך ראשית הצירים</option>
+            <option value="center">דרך מרכז הגוף</option>
+          </select>
+        </div>
+      </div>
+      <label class="mini-check"><input type="checkbox" id="mirror-keep" checked> השאר את הגוף המקורי (שיקוף-עותק)</label>
+      <p class="dlg-note">השיקוף אופה את הטרנספורם לגיאומטריה והופך את כיוון הפאות כך שהגוף נשאר תקין לייצוא ולהדפסה.</p>
+    </div>
+    <footer class="dlg-foot">
+      <button value="cancel" class="btn" formnovalidate>ביטול</button>
+      <button value="ok" class="btn btn-primary">שקף</button>
     </footer>
   </form>
 </dialog>

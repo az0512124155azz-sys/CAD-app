@@ -41,6 +41,9 @@ export const ICONS = {
   center: S('<circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>'),
   history: S('<path d="M3.5 12a8.5 8.5 0 1 1 2.5 6"/><path d="M3.5 12H1m2.5 0L6 9.5M12 7v5.2l3.5 2"/>'),
   panel: S('<rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M9 4v16"/>'),
+  sketch: S('<path d="M4 20c4-1 3.5-4 6-6.5S15 10 17 8"/><path d="m14.5 4.5 5 5L9 20l-5.5 1L4.5 15z" opacity="0"/><path d="M15 4.8 19.2 9 8.6 19.6 3.5 20.5l.9-5.1z"/><path d="m13 7 4 4" opacity=".5"/>'),
+  pattern: S('<rect x="3" y="3" width="7" height="7" rx="1.4"/><rect x="14" y="3" width="7" height="7" rx="1.4" opacity=".55"/><rect x="3" y="14" width="7" height="7" rx="1.4" opacity=".55"/><rect x="14" y="14" width="7" height="7" rx="1.4" opacity=".3"/>'),
+  mirror: S('<path d="M12 2.5v19" stroke-dasharray="2.6 2.4"/><path d="M8.5 6.5v11L2.5 12z"/><path d="M15.5 6.5v11l6-5.5z" opacity=".5"/>'),
   // גופים בסיסיים — איזומטריים
   'prim-box': S('<path d="M12 3 4 7.5v9L12 21l8-4.5v-9z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/>'),
   'prim-cylinder': S('<ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.66 3.13 3 7 3s7-1.34 7-3V6"/>'),

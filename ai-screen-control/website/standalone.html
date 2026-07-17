@@ -6,11 +6,7 @@
   <title>AI Screen Control - Universal AI Assistant</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
       --primary: #667eea;
@@ -32,626 +28,291 @@
       scroll-behavior: smooth;
     }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 20px;
-    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
     /* Navbar */
     .navbar {
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(10px);
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      position: sticky; top: 0; z-index: 100;
       border-bottom: 1px solid var(--border);
     }
-
     .navbar .container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      height: 75px;
+      display: flex; justify-content: space-between; align-items: center; height: 75px;
     }
-
     .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 22px;
-      font-weight: 800;
+      display: flex; align-items: center; gap: 12px;
+      font-size: 22px; font-weight: 800;
       background: var(--gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
-
-    .logo-icon {
-      font-size: 32px;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 40px;
-      list-style: none;
-    }
-
+    .logo-icon { font-size: 32px; }
+    .nav-links { display: flex; gap: 40px; list-style: none; }
     .nav-links a {
-      text-decoration: none;
-      color: var(--text-light);
-      font-weight: 600;
-      font-size: 15px;
-      transition: all 0.3s ease;
-      position: relative;
+      text-decoration: none; color: var(--text-light);
+      font-weight: 600; font-size: 15px; transition: all 0.3s ease;
     }
-
-    .nav-links a:hover {
-      color: var(--primary);
-    }
+    .nav-links a:hover { color: var(--primary); }
 
     /* Hero */
     .hero {
-      padding: 120px 0;
-      background: var(--gradient);
-      color: white;
-      position: relative;
-      overflow: hidden;
+      padding: 120px 0; background: var(--gradient);
+      color: white; position: relative; overflow: hidden;
     }
-
     .hero::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      right: -10%;
-      width: 500px;
-      height: 500px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 50%;
-      filter: blur(100px);
+      content: ''; position: absolute; top: -50%; right: -10%;
+      width: 500px; height: 500px; background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%; filter: blur(100px);
     }
-
     .hero .container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 80px;
-      align-items: center;
-      position: relative;
-      z-index: 1;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+      align-items: center; position: relative; z-index: 1;
     }
-
     .hero-content h1 {
-      font-size: 56px;
-      margin-bottom: 24px;
-      line-height: 1.15;
-      font-weight: 800;
-      letter-spacing: -1px;
+      font-size: 56px; margin-bottom: 24px; line-height: 1.15;
+      font-weight: 800; letter-spacing: -1px;
     }
-
-    .hero-content p {
-      font-size: 20px;
-      margin-bottom: 12px;
-      opacity: 0.95;
-      font-weight: 500;
-    }
-
-    .subtitle {
-      font-size: 18px;
-      margin-bottom: 40px;
-      opacity: 0.85;
-      font-weight: 400;
-    }
-
-    .hero-buttons {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
+    .hero-content p { font-size: 20px; margin-bottom: 12px; opacity: 0.95; font-weight: 500; }
+    .subtitle { font-size: 18px; margin-bottom: 40px; opacity: 0.85; font-weight: 400; }
+    .hero-buttons { display: flex; gap: 20px; flex-wrap: wrap; }
 
     .btn {
-      padding: 14px 36px;
-      border-radius: 10px;
-      text-decoration: none;
-      font-weight: 700;
-      display: inline-block;
-      transition: all 0.3s ease;
-      border: 2px solid transparent;
-      font-size: 16px;
-      letter-spacing: 0.3px;
+      padding: 14px 36px; border-radius: 10px; text-decoration: none;
+      font-weight: 700; display: inline-block; transition: all 0.3s ease;
+      border: 2px solid transparent; font-size: 16px; letter-spacing: 0.3px;
+      cursor: pointer; font-family: inherit;
     }
-
     .btn-primary {
-      background: white;
-      color: var(--primary);
+      background: white; color: var(--primary);
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
     }
-
-    .btn-primary:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
-    }
-
-    .btn-secondary {
-      background: transparent;
-      color: white;
-      border: 2px solid white;
-    }
-
-    .btn-secondary:hover {
-      background: white;
-      color: var(--primary);
-      transform: translateY(-4px);
-    }
+    .btn-primary:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25); }
+    .btn-secondary { background: transparent; color: white; border: 2px solid white; }
+    .btn-secondary:hover { background: white; color: var(--primary); transform: translateY(-4px); }
 
     .mockup {
-      background: white;
-      border-radius: 16px;
-      padding: 24px;
+      background: white; border-radius: 16px; padding: 24px;
       box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
-      transform: perspective(1000px) rotateY(-5px);
-      transition: transform 0.3s ease;
+      transform: perspective(1000px) rotateY(-5px); transition: transform 0.3s ease;
     }
-
-    .mockup:hover {
-      transform: perspective(1000px) rotateY(0deg);
-    }
-
+    .mockup:hover { transform: perspective(1000px) rotateY(0deg); }
     .mockup-screen {
       background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
-      border-radius: 12px;
-      padding: 24px;
-      height: 320px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      overflow: hidden;
+      border-radius: 12px; padding: 24px; height: 320px;
+      display: flex; flex-direction: column; gap: 16px; overflow: hidden;
     }
-
     .chat-bubble {
-      background: var(--gradient);
-      color: white;
-      padding: 14px 18px;
-      border-radius: 14px;
-      width: fit-content;
-      max-width: 85%;
-      font-size: 14px;
-      animation: slideIn 0.6s ease;
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-      font-weight: 500;
+      background: var(--gradient); color: white; padding: 14px 18px;
+      border-radius: 14px; width: fit-content; max-width: 85%; font-size: 14px;
+      animation: slideIn 0.6s ease; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); font-weight: 500;
     }
-
     .chat-bubble.response {
-      background: #ffffff;
-      color: #333;
-      align-self: flex-end;
-      border: 1px solid var(--border);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      background: #ffffff; color: #333; align-self: flex-end;
+      border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
-
     @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px) translateX(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) translateX(0);
-      }
+      from { opacity: 0; transform: translateY(10px) translateX(-10px); }
+      to { opacity: 1; transform: translateY(0) translateX(0); }
     }
 
     /* Features */
-    .features {
-      padding: 100px 0;
-      background: var(--light);
-      position: relative;
-    }
-
-    .features h2 {
-      text-align: center;
-      font-size: 44px;
-      margin-bottom: 20px;
-      font-weight: 800;
-      color: var(--text);
-    }
-
-    .features > .container > p {
-      text-align: center;
-      color: var(--text-light);
-      font-size: 18px;
-      margin-bottom: 50px;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 32px;
-    }
-
+    .features { padding: 100px 0; background: var(--light); position: relative; }
+    .features h2 { text-align: center; font-size: 44px; margin-bottom: 20px; font-weight: 800; color: var(--text); }
+    .features > .container > p { text-align: center; color: var(--text-light); font-size: 18px; margin-bottom: 50px; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 32px; }
     .feature-card {
-      background: white;
-      padding: 40px 32px;
-      border-radius: 16px;
-      text-align: center;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-      transition: all 0.3s ease;
-      border: 1px solid var(--border);
-      position: relative;
-      overflow: hidden;
+      background: white; padding: 40px 32px; border-radius: 16px; text-align: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06); transition: all 0.3s ease;
+      border: 1px solid var(--border); position: relative; overflow: hidden;
     }
-
     .feature-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: var(--gradient);
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.3s ease;
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+      background: var(--gradient); transform: scaleX(0); transform-origin: left; transition: transform 0.3s ease;
     }
-
-    .feature-card:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15);
-    }
-
-    .feature-card:hover::before {
-      transform: scaleX(1);
-    }
-
-    .feature-icon {
-      font-size: 56px;
-      margin-bottom: 20px;
-      transition: transform 0.3s ease;
-    }
-
-    .feature-card:hover .feature-icon {
-      transform: scale(1.1);
-    }
-
-    .feature-card h3 {
-      margin-bottom: 12px;
-      color: var(--text);
-      font-size: 20px;
-      font-weight: 700;
-    }
-
-    .feature-card p {
-      color: var(--text-light);
-      font-size: 15px;
-      line-height: 1.6;
-    }
+    .feature-card:hover { transform: translateY(-10px); box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15); }
+    .feature-card:hover::before { transform: scaleX(1); }
+    .feature-icon { font-size: 56px; margin-bottom: 20px; transition: transform 0.3s ease; }
+    .feature-card:hover .feature-icon { transform: scale(1.1); }
+    .feature-card h3 { margin-bottom: 12px; color: var(--text); font-size: 20px; font-weight: 700; }
+    .feature-card p { color: var(--text-light); font-size: 15px; line-height: 1.6; }
 
     /* Download */
-    .download {
-      padding: 100px 0;
-      background: white;
-    }
-
-    .download h2 {
-      text-align: center;
-      font-size: 44px;
-      margin-bottom: 16px;
-      font-weight: 800;
-      color: var(--text);
-    }
-
-    .section-subtitle {
-      text-align: center;
-      font-size: 18px;
-      color: var(--text-light);
-      margin-bottom: 60px;
-      font-weight: 500;
-    }
-
-    .download-options {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 32px;
-    }
-
+    .download { padding: 100px 0; background: white; }
+    .download h2 { text-align: center; font-size: 44px; margin-bottom: 16px; font-weight: 800; color: var(--text); }
+    .section-subtitle { text-align: center; font-size: 18px; color: var(--text-light); margin-bottom: 60px; font-weight: 500; }
+    .download-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px; }
     .os-card {
-      background: white;
-      border: 2px solid var(--border);
-      border-radius: 16px;
-      padding: 40px 32px;
-      text-align: center;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
+      background: white; border: 2px solid var(--border); border-radius: 16px;
+      padding: 40px 32px; text-align: center; transition: all 0.3s ease;
+      position: relative; overflow: hidden;
     }
-
-    .os-card:hover {
-      border-color: var(--primary);
-      box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15);
-      transform: translateY(-8px);
-    }
-
-    .os-icon {
-      font-size: 64px;
-      margin-bottom: 20px;
-      transition: transform 0.3s ease;
-    }
-
-    .os-card:hover .os-icon {
-      transform: scale(1.1);
-    }
-
-    .os-card h3 {
-      color: var(--text);
-      margin-bottom: 8px;
-      font-size: 24px;
-      font-weight: 700;
-    }
-
-    .os-card > p {
-      color: var(--text-light);
-      font-size: 14px;
-      margin-bottom: 24px;
-    }
-
-    .btn-small {
-      padding: 11px 24px;
-      font-size: 14px;
-      font-weight: 600;
-    }
+    .os-card:hover { border-color: var(--primary); box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15); transform: translateY(-8px); }
+    .os-icon { font-size: 64px; margin-bottom: 20px; transition: transform 0.3s ease; }
+    .os-card:hover .os-icon { transform: scale(1.1); }
+    .os-card h3 { color: var(--text); margin-bottom: 8px; font-size: 24px; font-weight: 700; }
+    .os-card > p { color: var(--text-light); font-size: 14px; margin-bottom: 24px; }
+    .btn-small { padding: 11px 24px; font-size: 14px; font-weight: 600; }
+    .btn-gradient { background: var(--gradient); color: white; border: none; }
+    .btn-gradient:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4); }
 
     /* Setup */
-    .setup {
-      padding: 100px 0;
-      background: var(--light);
-    }
-
-    .setup h2 {
-      text-align: center;
-      font-size: 44px;
-      margin-bottom: 16px;
-      font-weight: 800;
-      color: var(--text);
-    }
-
-    .setup > .container > p {
-      text-align: center;
-      color: var(--text-light);
-      font-size: 18px;
-      margin-bottom: 50px;
-    }
-
-    .setup-steps {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 40px;
-    }
-
-    .step {
-      text-align: center;
-    }
-
+    .setup { padding: 100px 0; background: var(--light); }
+    .setup h2 { text-align: center; font-size: 44px; margin-bottom: 16px; font-weight: 800; color: var(--text); }
+    .setup > .container > p { text-align: center; color: var(--text-light); font-size: 18px; margin-bottom: 50px; }
+    .setup-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; }
+    .step { text-align: center; }
     .step-number {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 72px;
-      height: 72px;
-      background: var(--gradient);
-      color: white;
-      border-radius: 16px;
-      font-size: 36px;
-      font-weight: bold;
-      margin-bottom: 24px;
-      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
-      transition: all 0.3s ease;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 72px; height: 72px; background: var(--gradient); color: white;
+      border-radius: 16px; font-size: 36px; font-weight: bold; margin-bottom: 24px;
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3); transition: all 0.3s ease;
     }
+    .step:hover .step-number { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4); }
+    .step h3 { margin-bottom: 15px; color: var(--primary); }
+    .step p { color: var(--text-light); margin-bottom: 15px; }
+    .step ol { text-align: left; color: var(--text); margin-left: 20px; }
+    .step li { margin-bottom: 8px; }
 
-    .step:hover .step-number {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
+    .api-buttons { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+    .api-key-btn {
+      display: flex; align-items: center; justify-content: space-between;
+      background: white; border: 2px solid var(--border); border-radius: 10px;
+      padding: 14px 18px; text-decoration: none; color: var(--text);
+      font-weight: 600; font-size: 14px; transition: all 0.3s ease;
     }
-
-    .step h3 {
-      margin-bottom: 15px;
-      color: var(--primary);
-    }
-
-    .step p {
-      color: var(--text-light);
-      margin-bottom: 15px;
-    }
-
-    .step ol {
-      text-align: left;
-      color: var(--text);
-      margin-left: 20px;
-    }
-
-    .step li {
-      margin-bottom: 8px;
-    }
-
-    .api-options {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 15px;
-      margin-top: 15px;
-    }
-
-    .api-option {
-      background: white;
-      border: 1px solid var(--border);
-      padding: 15px;
-      border-radius: 8px;
-      text-align: center;
-    }
-
-    .api-option h4 {
-      color: var(--primary);
-      margin-bottom: 10px;
-      font-size: 14px;
-    }
-
-    .api-option a {
-      color: var(--primary);
-      text-decoration: none;
-      font-size: 13px;
-    }
+    .api-key-btn:hover { border-color: var(--primary); transform: translateX(4px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15); }
+    .api-key-btn .api-name { display: flex; align-items: center; gap: 10px; }
+    .api-key-btn .api-badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; background: var(--light); color: var(--primary); font-weight: 700; }
+    .api-key-btn .api-arrow { color: var(--primary); font-weight: 700; }
 
     /* Docs */
-    .docs {
-      padding: 100px 0;
-    }
-
-    .docs h2 {
-      text-align: center;
-      font-size: 44px;
-      margin-bottom: 16px;
-      font-weight: 800;
-      color: var(--text);
-    }
-
-    .docs-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 28px;
-      margin-top: 50px;
-    }
-
+    .docs { padding: 100px 0; }
+    .docs h2 { text-align: center; font-size: 44px; margin-bottom: 16px; font-weight: 800; color: var(--text); }
+    .docs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 28px; margin-top: 50px; }
     .doc-card {
-      background: white;
-      padding: 32px;
-      border-radius: 16px;
-      border-left: 5px solid var(--primary);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-      transition: all 0.3s ease;
-      border: 1px solid var(--border);
-      border-left: 5px solid var(--primary);
+      background: white; padding: 32px; border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06); transition: all 0.3s ease;
+      border: 1px solid var(--border); border-left: 5px solid var(--primary);
     }
+    .doc-card:hover { transform: translateY(-6px); box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15); }
+    .doc-card h3 { margin-bottom: 12px; color: var(--text); font-size: 18px; font-weight: 700; }
+    .doc-card p { color: var(--text-light); font-size: 15px; line-height: 1.6; }
 
-    .doc-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15);
-    }
-
-    .doc-card h3 {
-      margin-bottom: 12px;
-      color: var(--text);
-      font-size: 18px;
-      font-weight: 700;
-    }
-
-    .doc-card p {
-      color: var(--text-light);
-      font-size: 15px;
-      line-height: 1.6;
-    }
-
-    .faq {
-      margin-top: 80px;
-      background: white;
-      padding: 50px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-    }
-
-    .faq h3 {
-      color: var(--text);
-      margin-bottom: 40px;
-      font-size: 32px;
-      font-weight: 800;
-    }
-
-    .faq-item {
-      margin-bottom: 32px;
-      padding-bottom: 32px;
-      border-bottom: 1px solid var(--border);
-      transition: all 0.3s ease;
-    }
-
-    .faq-item:hover {
-      padding-left: 16px;
-    }
-
-    .faq-item:last-child {
-      border-bottom: none;
-      margin-bottom: 0;
-      padding-bottom: 0;
-    }
-
-    .faq-item h4 {
-      color: var(--primary);
-      margin-bottom: 12px;
-      font-size: 18px;
-      font-weight: 700;
-    }
-
-    .faq-item p {
-      color: var(--text-light);
-      line-height: 1.7;
-      font-size: 15px;
-    }
+    .faq { margin-top: 80px; background: white; padding: 50px; border-radius: 16px; border: 1px solid var(--border); }
+    .faq h3 { color: var(--text); margin-bottom: 40px; font-size: 32px; font-weight: 800; }
+    .faq-item { margin-bottom: 32px; padding-bottom: 32px; border-bottom: 1px solid var(--border); transition: all 0.3s ease; }
+    .faq-item:hover { padding-left: 16px; }
+    .faq-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .faq-item h4 { color: var(--primary); margin-bottom: 12px; font-size: 18px; font-weight: 700; }
+    .faq-item p { color: var(--text-light); line-height: 1.7; font-size: 15px; }
 
     /* Footer */
     footer {
       background: linear-gradient(180deg, #0f172a 0%, #1a1f3a 100%);
-      color: white;
-      padding: 60px 0;
-      text-align: center;
+      color: white; padding: 60px 0; text-align: center;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
+    footer p { margin: 8px 0; font-size: 15px; opacity: 0.9; }
+    footer a { color: white; text-decoration: none; }
 
-    footer p {
-      margin: 8px 0;
-      font-size: 15px;
-      opacity: 0.9;
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px);
+      z-index: 1000; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.active { display: flex; animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal {
+      background: white; border-radius: 20px; max-width: 640px; width: 100%;
+      max-height: 90vh; overflow-y: auto; box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+      animation: modalPop 0.3s ease;
+    }
+    @keyframes modalPop { from { opacity: 0; transform: scale(0.92) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    .modal-header {
+      background: var(--gradient); color: white; padding: 28px 32px;
+      border-radius: 20px 20px 0 0; display: flex; align-items: center;
+      justify-content: space-between; position: sticky; top: 0;
+    }
+    .modal-header h3 { font-size: 22px; font-weight: 800; display: flex; align-items: center; gap: 12px; }
+    .modal-close {
+      background: rgba(255,255,255,0.2); border: none; color: white;
+      width: 38px; height: 38px; border-radius: 10px; cursor: pointer;
+      font-size: 20px; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.35); }
+    .modal-body { padding: 32px; }
+
+    /* Choice cards inside modal */
+    .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .choice-card {
+      border: 2px solid var(--border); border-radius: 16px; padding: 28px 24px;
+      text-align: center; cursor: pointer; transition: all 0.3s ease; background: white;
+    }
+    .choice-card:hover { border-color: var(--primary); transform: translateY(-5px); box-shadow: 0 12px 30px rgba(102,126,234,0.15); }
+    .choice-icon { font-size: 48px; margin-bottom: 16px; }
+    .choice-card h4 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .choice-card p { font-size: 14px; color: var(--text-light); }
+    .choice-tag {
+      display: inline-block; margin-top: 14px; font-size: 12px; font-weight: 700;
+      padding: 4px 12px; border-radius: 20px; background: var(--light); color: var(--primary);
     }
 
-    footer a {
-      color: white;
-      text-decoration: none;
+    /* Instructions view */
+    .install-steps { list-style: none; counter-reset: step; }
+    .install-steps li {
+      position: relative; padding: 0 0 24px 52px; counter-increment: step;
     }
+    .install-steps li::before {
+      content: counter(step); position: absolute; left: 0; top: 0;
+      width: 34px; height: 34px; background: var(--gradient); color: white;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 15px;
+    }
+    .install-steps li:not(:last-child)::after {
+      content: ''; position: absolute; left: 16px; top: 38px; bottom: 4px;
+      width: 2px; background: var(--border);
+    }
+    .install-steps strong { display: block; margin-bottom: 4px; font-size: 15px; }
+    .install-steps span { color: var(--text-light); font-size: 14px; }
+    .code-line {
+      background: #0f172a; color: #10b981; padding: 10px 14px; border-radius: 8px;
+      font-family: 'Courier New', monospace; font-size: 13px; margin-top: 8px;
+      display: block; overflow-x: auto; white-space: nowrap;
+    }
+    .download-banner {
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+      border: 1px solid #10b981; border-radius: 12px; padding: 18px 20px;
+      margin-bottom: 28px; display: flex; align-items: center; gap: 14px;
+    }
+    .download-banner .dl-icon { font-size: 28px; }
+    .download-banner .dl-text strong { color: #065f46; font-size: 15px; }
+    .download-banner .dl-text p { color: #047857; font-size: 13px; margin: 0; }
+    .modal-back {
+      background: none; border: none; color: var(--primary); font-weight: 600;
+      cursor: pointer; font-size: 14px; margin-bottom: 20px; font-family: inherit;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .modal-back:hover { text-decoration: underline; }
+    .redownload-btn {
+      width: 100%; margin-top: 8px; padding: 14px; background: var(--gradient);
+      color: white; border: none; border-radius: 10px; font-weight: 700;
+      font-size: 15px; cursor: pointer; font-family: inherit; transition: all 0.2s ease;
+    }
+    .redownload-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(102,126,234,0.4); }
 
     /* Responsive */
     @media (max-width: 768px) {
-      .hero {
-        padding: 80px 0;
-      }
-
-      .hero-content h1 {
-        font-size: 40px;
-      }
-
-      .hero-content p {
-        font-size: 18px;
-      }
-
-      .hero .container {
-        grid-template-columns: 1fr;
-        gap: 40px;
-      }
-
-      .hero-buttons {
-        flex-direction: column;
-        width: 100%;
-      }
-
-      .btn {
-        width: 100%;
-        text-align: center;
-      }
-
-      .features-grid,
-      .download-options,
-      .docs-grid,
-      .setup-steps {
-        grid-template-columns: 1fr;
-      }
-
-      .nav-links {
-        gap: 20px;
-        font-size: 13px;
-      }
+      .hero { padding: 80px 0; }
+      .hero-content h1 { font-size: 40px; }
+      .hero-content p { font-size: 18px; }
+      .hero .container { grid-template-columns: 1fr; gap: 40px; }
+      .hero-buttons { flex-direction: column; width: 100%; }
+      .btn { width: 100%; text-align: center; }
+      .features-grid, .download-options, .docs-grid, .setup-steps, .choice-grid { grid-template-columns: 1fr; }
+      .nav-links { gap: 20px; font-size: 13px; }
+      .modal-body { padding: 24px; }
     }
   </style>
 </head>
@@ -736,28 +397,28 @@
   <section id="download" class="download">
     <div class="container">
       <h2>Get Started Now</h2>
-      <p class="section-subtitle">Simple installation. Less than 1 minute.</p>
+      <p class="section-subtitle">Choose your device. Pick your installation method. Done in 1 minute.</p>
 
       <div class="download-options">
         <div class="os-card">
           <div class="os-icon">🪟</div>
           <h3>Windows</h3>
-          <p>Works on Windows 7+</p>
-          <a href="#" class="btn btn-small">📥 Download .exe</a>
+          <p>Works on Windows 7, 8, 10, 11</p>
+          <button class="btn btn-small btn-gradient" onclick="openDownloadModal('windows')">Select Windows</button>
         </div>
 
         <div class="os-card">
           <div class="os-icon">🍎</div>
           <h3>macOS</h3>
-          <p>Works on macOS 10.13+</p>
-          <a href="#" class="btn btn-small">📥 Download .dmg</a>
+          <p>Works on macOS 10.13 and newer</p>
+          <button class="btn btn-small btn-gradient" onclick="openDownloadModal('macos')">Select macOS</button>
         </div>
 
         <div class="os-card">
           <div class="os-icon">🐧</div>
           <h3>Linux</h3>
           <p>Ubuntu, Fedora, Arch & more</p>
-          <a href="#" class="btn btn-small">📥 Download</a>
+          <button class="btn btn-small btn-gradient" onclick="openDownloadModal('linux')">Select Linux</button>
         </div>
       </div>
     </div>
@@ -770,39 +431,40 @@
 
       <div class="setup-steps">
         <div class="step">
-          <div class="step-number">1️⃣</div>
+          <div class="step-number">1</div>
           <h3>Download & Install</h3>
-          <p>Choose your OS above. Install takes 1 minute.</p>
+          <p>Choose your OS above, pick installation type, and follow the guide.</p>
           <p style="font-size: 13px; color: #999; margin-top: 10px;">Works on Windows, Mac, Linux</p>
         </div>
 
         <div class="step">
-          <div class="step-number">2️⃣</div>
+          <div class="step-number">2</div>
           <h3>Get an API Key</h3>
-          <div class="api-options">
-            <div class="api-option">
-              <h4>🤖 Claude</h4>
-              <p><strong>Recommended</strong></p>
-            </div>
-            <div class="api-option">
-              <h4>⚡ OpenAI</h4>
-              <p><strong>Powerful</strong></p>
-            </div>
-            <div class="api-option">
-              <h4>🎨 Gemini</h4>
-              <p><strong>Free Tier</strong></p>
-            </div>
+          <p>Click a provider below to get your free API key:</p>
+          <div class="api-buttons">
+            <a class="api-key-btn" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">
+              <span class="api-name">🤖 Claude <span class="api-badge">Recommended</span></span>
+              <span class="api-arrow">Get Key →</span>
+            </a>
+            <a class="api-key-btn" href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">
+              <span class="api-name">⚡ OpenAI <span class="api-badge">Powerful</span></span>
+              <span class="api-arrow">Get Key →</span>
+            </a>
+            <a class="api-key-btn" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">
+              <span class="api-name">🎨 Gemini <span class="api-badge">Free Tier</span></span>
+              <span class="api-arrow">Get Key →</span>
+            </a>
           </div>
         </div>
 
         <div class="step">
-          <div class="step-number">3️⃣</div>
+          <div class="step-number">3</div>
           <h3>Configure & Go</h3>
           <ol>
             <li>Open AI Screen Control</li>
             <li>Click ⚙️ Settings</li>
             <li>Paste your API key</li>
-            <li>Click Save → You're done!</li>
+            <li>Click Save — you're done!</li>
           </ol>
         </div>
       </div>
@@ -817,32 +479,27 @@
       <div class="docs-grid">
         <div class="doc-card">
           <h3>📸 Screenshots</h3>
-          <p>Click the camera button, press keyboard shortcut, or drag-and-drop. Screenshot appears instantly in chat.</p>
+          <p>Click the camera button, press the keyboard shortcut, or drag-and-drop. Screenshot appears instantly in chat.</p>
         </div>
-
         <div class="doc-card">
           <h3>💬 Ask Anything</h3>
-          <p>Type questions about what you see. "What's this button?", "Read this text", "Summarize this". AI analyzes and answers.</p>
+          <p>Type questions about what you see. "What's this button?", "Read this text", "Summarize this." AI analyzes and answers.</p>
         </div>
-
         <div class="doc-card">
           <h3>🎮 Screen Commands</h3>
-          <p>Tell AI what to do. "Click submit", "Type my email", "Scroll down". AI does it for you (coming soon).</p>
+          <p>Tell AI what to do. "Click submit", "Type my email", "Scroll down." AI does it for you.</p>
         </div>
-
         <div class="doc-card">
           <h3>🎥 Video Deep Dives</h3>
-          <p>Paste YouTube links. Ask AI to summarize, analyze, extract info. Perfect for research and learning.</p>
+          <p>Paste YouTube links. Ask AI to summarize, analyze, and extract info. Perfect for research and learning.</p>
         </div>
-
         <div class="doc-card">
           <h3>⚙️ Easy Settings</h3>
-          <p>One-click access. Paste API key. Choose your AI. That's it. No complicated configuration needed.</p>
+          <p>One-click access. Paste your API key. Choose your AI. No complicated configuration needed.</p>
         </div>
-
         <div class="doc-card">
           <h3>🔐 Your Privacy</h3>
-          <p>Screenshots ONLY to your AI. Your API key stays local. No tracking. No data collection. Period.</p>
+          <p>Screenshots go ONLY to your AI. Your API key stays local. No tracking. No data collection.</p>
         </div>
       </div>
 
@@ -850,23 +507,23 @@
         <h3>❓ Common Questions</h3>
         <div class="faq-item">
           <h4>💰 Which AI API should I choose?</h4>
-          <p><strong>Claude:</strong> Best overall, great for everything. <strong>GPT-4:</strong> Excellent analysis. <strong>Gemini:</strong> Free tier available, good for video.</p>
+          <p><strong>Claude:</strong> Best overall, great for everything. <strong>GPT-4:</strong> Excellent analysis. <strong>Gemini:</strong> Free tier available, great for video.</p>
         </div>
         <div class="faq-item">
           <h4>🔒 Is my data private?</h4>
-          <p>Yes! 100%. Screenshots go ONLY to your chosen AI API. We never see your data. Your API key stays on your computer.</p>
+          <p>Yes — 100%. Screenshots go ONLY to your chosen AI API. We never see your data. Your API key stays on your computer.</p>
         </div>
         <div class="faq-item">
           <h4>🔄 Can I use multiple API keys?</h4>
-          <p>Absolutely! Configure as many as you want. Switch between them anytime. Use different APIs for different tasks.</p>
+          <p>Absolutely. Configure as many as you want and switch between them anytime. Use different APIs for different tasks.</p>
         </div>
         <div class="faq-item">
           <h4>🌐 Do I need internet?</h4>
-          <p>Yes, internet is needed to use AI features. Screenshots work offline, but AI analysis requires a connection.</p>
+          <p>Yes, internet is needed for AI features. Screenshots work offline, but AI analysis requires a connection.</p>
         </div>
         <div class="faq-item">
           <h4>💳 Will it cost money?</h4>
-          <p>Only if you use paid AI APIs. All APIs have free tiers. Gemini has free tier always. Claude/OpenAI charge per usage.</p>
+          <p>Only if you use paid AI APIs. All providers have free tiers. Gemini has a permanent free tier. Claude/OpenAI charge per usage.</p>
         </div>
       </div>
     </div>
@@ -878,5 +535,257 @@
       <p>Made with ❤️ for creators, developers, and AI enthusiasts</p>
     </div>
   </footer>
+
+  <!-- ===== DOWNLOAD MODAL ===== -->
+  <div class="modal-overlay" id="downloadModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Choose Installation Method</h3>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    // OS display config
+    var OS_CONFIG = {
+      windows: { name: 'Windows', icon: '🪟' },
+      macos:   { name: 'macOS',   icon: '🍎' },
+      linux:   { name: 'Linux',   icon: '🐧' }
+    };
+
+    var currentOS = null;
+    var DL_CACHE = '';
+    var DL_FILENAME = '';
+
+    function openDownloadModal(os) {
+      currentOS = os;
+      renderChoiceStep();
+      document.getElementById('downloadModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      document.getElementById('downloadModal').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    // Step 1: Ask installer file vs manual
+    function renderChoiceStep() {
+      var cfg = OS_CONFIG[currentOS];
+      document.getElementById('modalTitle').textContent = cfg.icon + '  Install on ' + cfg.name;
+      document.getElementById('modalBody').innerHTML =
+        '<p style="text-align:center; color:var(--text-light); margin-bottom:28px; font-size:15px;">' +
+        'How would you like to install AI Screen Control?</p>' +
+        '<div class="choice-grid">' +
+          '<div class="choice-card" onclick="chooseMethod(\'installer\')">' +
+            '<div class="choice-icon">📦</div>' +
+            '<h4>Installer File</h4>' +
+            '<p>Download a ready-to-run installer. The easiest way — just double-click.</p>' +
+            '<span class="choice-tag">Easiest • Recommended</span>' +
+          '</div>' +
+          '<div class="choice-card" onclick="chooseMethod(\'manual\')">' +
+            '<div class="choice-icon">🛠️</div>' +
+            '<h4>Manual Install</h4>' +
+            '<p>Build from source with full control. For developers and advanced users.</p>' +
+            '<span class="choice-tag">Advanced</span>' +
+          '</div>' +
+        '</div>';
+    }
+
+    // Step 2: user picked a method -> auto-download + show instructions
+    function chooseMethod(method) {
+      var cfg = OS_CONFIG[currentOS];
+      var file = buildDownloadFile(currentOS, method);
+      DL_CACHE = file.content;
+      DL_FILENAME = file.filename;
+      // Auto-download immediately
+      triggerDownload(file.filename, file.content);
+
+      var backBtn = '<button class="modal-back" onclick="renderChoiceStep()">← Back to methods</button>';
+      var banner =
+        '<div class="download-banner">' +
+          '<div class="dl-icon">✅</div>' +
+          '<div class="dl-text"><strong>Download started: ' + file.filename + '</strong>' +
+          '<p>Check your Downloads folder. Follow the steps below to install.</p></div>' +
+        '</div>';
+
+      var title = (method === 'installer' ? '📦 Installer' : '🛠️ Manual') + ' — ' + cfg.name;
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalBody').innerHTML =
+        backBtn + banner +
+        renderInstructions(currentOS, method) +
+        '<button class="redownload-btn" onclick="triggerDownload(DL_FILENAME, DL_CACHE)">' +
+        '⬇️ Download the file again</button>';
+    }
+
+    // Build the file that gets downloaded (real, generated in-browser)
+    function buildDownloadFile(os, method) {
+      var filename, content;
+      if (method === 'installer') {
+        if (os === 'windows') {
+          filename = 'Install-AIScreenControl.bat';
+          content = winInstaller();
+        } else if (os === 'macos') {
+          filename = 'install-ai-screen-control.command';
+          content = unixInstaller('macOS');
+        } else {
+          filename = 'install-ai-screen-control.sh';
+          content = unixInstaller('Linux');
+        }
+      } else {
+        filename = 'MANUAL-INSTALL-' + os + '.txt';
+        content = manualGuide(os);
+      }
+      return { filename: filename, content: content };
+    }
+
+    function triggerDownload(filename, content) {
+      var blob = new Blob([content], { type: 'text/plain' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    }
+
+    // ---- Installer script contents ----
+    function winInstaller() {
+      return '@echo off\r\n' +
+        'REM AI Screen Control - Windows Installer\r\n' +
+        'echo ============================================\r\n' +
+        'echo   AI Screen Control - Installer\r\n' +
+        'echo ============================================\r\n' +
+        'echo.\r\n' +
+        'echo This script will download and set up AI Screen Control.\r\n' +
+        'echo.\r\n' +
+        'echo [1/3] Checking for Node.js...\r\n' +
+        'where node >nul 2>nul || (echo Node.js not found. Please install from https://nodejs.org && pause && exit /b)\r\n' +
+        'echo [2/3] Cloning the app...\r\n' +
+        'git clone https://github.com/az0512124155azz-sys/CAD-app.git "%USERPROFILE%\\AIScreenControl"\r\n' +
+        'cd /d "%USERPROFILE%\\AIScreenControl\\ai-screen-control"\r\n' +
+        'echo [3/3] Installing dependencies...\r\n' +
+        'call npm install\r\n' +
+        'echo.\r\n' +
+        'echo Done! Launch with:  npm run tauri-dev\r\n' +
+        'pause\r\n';
+    }
+
+    function unixInstaller(platform) {
+      return '#!/bin/bash\n' +
+        '# AI Screen Control - ' + platform + ' Installer\n' +
+        'set -e\n' +
+        'echo "============================================"\n' +
+        'echo "  AI Screen Control - Installer (' + platform + ')"\n' +
+        'echo "============================================"\n' +
+        'echo ""\n' +
+        'echo "[1/3] Checking prerequisites..."\n' +
+        'command -v node >/dev/null 2>&1 || { echo "Node.js required: https://nodejs.org"; exit 1; }\n' +
+        'command -v git  >/dev/null 2>&1 || { echo "Git required."; exit 1; }\n' +
+        'echo "[2/3] Cloning the app..."\n' +
+        'git clone https://github.com/az0512124155azz-sys/CAD-app.git "$HOME/AIScreenControl"\n' +
+        'cd "$HOME/AIScreenControl/ai-screen-control"\n' +
+        'echo "[3/3] Installing dependencies..."\n' +
+        'npm install\n' +
+        'echo ""\n' +
+        'echo "Done! Launch with:  npm run tauri-dev"\n';
+    }
+
+    function manualGuide(os) {
+      var pre = {
+        windows: 'Install Node.js (https://nodejs.org), Rust (https://rustup.rs), and Visual C++ Build Tools.',
+        macos:   'Install Node.js (https://nodejs.org), Rust (https://rustup.rs), and Xcode Command Line Tools: xcode-select --install',
+        linux:   'Install Node.js, Rust (https://rustup.rs), and: sudo apt install libgtk-3-dev libwebkit2gtk-4.0-dev build-essential'
+      }[os];
+      return 'AI SCREEN CONTROL - MANUAL INSTALLATION (' + os.toUpperCase() + ')\n' +
+        '======================================================\n\n' +
+        'PREREQUISITES:\n' + pre + '\n\n' +
+        'STEPS:\n' +
+        '1. Clone the repository:\n' +
+        '   git clone https://github.com/az0512124155azz-sys/CAD-app.git\n\n' +
+        '2. Enter the app folder:\n' +
+        '   cd CAD-app/ai-screen-control\n\n' +
+        '3. Install dependencies:\n' +
+        '   npm install\n\n' +
+        '4. Run in development mode:\n' +
+        '   npm run tauri-dev\n\n' +
+        '5. Or build an installer for your OS:\n' +
+        '   npm run tauri-build\n\n' +
+        'The built installer will be in:\n' +
+        '   src-tauri/target/release/bundle/\n\n' +
+        'AFTER INSTALL:\n' +
+        '1. Open the app\n' +
+        '2. Click Settings (gear icon)\n' +
+        '3. Paste your API key (get one at console.anthropic.com)\n' +
+        '4. Save and start using!\n';
+    }
+
+    // ---- On-screen instructions (HTML) ----
+    function renderInstructions(os, method) {
+      if (method === 'installer') {
+        if (os === 'windows') {
+          return list([
+            ['Locate the file', 'Find <strong>Install-AIScreenControl.bat</strong> in your Downloads folder.'],
+            ['Run it', 'Right-click the file and choose <strong>“Run as administrator”</strong>.', 'Install-AIScreenControl.bat'],
+            ['Wait for setup', 'The script installs everything automatically. This takes 1–2 minutes.'],
+            ['Launch the app', 'When finished, run the command shown in the window:', 'npm run tauri-dev']
+          ]);
+        } else if (os === 'macos') {
+          return list([
+            ['Locate the file', 'Find <strong>install-ai-screen-control.command</strong> in Downloads.'],
+            ['Make it runnable', 'Open Terminal and run:', 'chmod +x ~/Downloads/install-ai-screen-control.command'],
+            ['Run it', 'Double-click the file (or run it in Terminal). Approve if macOS asks.'],
+            ['Launch the app', 'When setup finishes, start it with:', 'npm run tauri-dev']
+          ]);
+        } else {
+          return list([
+            ['Locate the file', 'Find <strong>install-ai-screen-control.sh</strong> in Downloads.'],
+            ['Make it executable', 'Open a terminal and run:', 'chmod +x ~/Downloads/install-ai-screen-control.sh'],
+            ['Run it', 'Execute the installer:', '~/Downloads/install-ai-screen-control.sh'],
+            ['Launch the app', 'When setup finishes, start it with:', 'npm run tauri-dev']
+          ]);
+        }
+      } else {
+        return list([
+          ['Open the guide', 'The downloaded <strong>MANUAL-INSTALL-' + os + '.txt</strong> has every command.'],
+          ['Install prerequisites', 'You need Node.js and Rust installed first (details in the file).'],
+          ['Clone & install', 'Get the code and install dependencies:', 'git clone https://github.com/az0512124155azz-sys/CAD-app.git'],
+          ['Build or run', 'Run in dev mode or build a native installer:', 'npm run tauri-build']
+        ]);
+      }
+    }
+
+    function list(steps) {
+      var html = '<ol class="install-steps">';
+      for (var i = 0; i < steps.length; i++) {
+        var s = steps[i];
+        html += '<li><strong>' + s[0] + '</strong><span>' + s[1] + '</span>';
+        if (s[2]) html += '<code class="code-line">' + s[2] + '</code>';
+        html += '</li>';
+      }
+      html += '</ol>';
+      return html;
+    }
+
+    // Close on overlay click / Escape
+    document.getElementById('downloadModal').addEventListener('click', function (e) {
+      if (e.target === this) closeModal();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    // Smooth scroll for nav
+    document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        var t = document.querySelector(this.getAttribute('href'));
+        if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
+      });
+    });
+  </script>
 </body>
 </html>

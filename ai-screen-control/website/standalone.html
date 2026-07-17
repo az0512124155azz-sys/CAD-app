@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Screen Control - Universal AI Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #667eea;
+      --secondary: #764ba2;
+      --accent: #ff6b6b;
+      --dark: #0f172a;
+      --light: #f8f9ff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-light: #64748b;
+      --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    html, body {
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+      line-height: 1.6;
+      background: white;
+      scroll-behavior: smooth;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Navbar */
+    .navbar {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .navbar .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 75px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 22px;
+      font-weight: 800;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .logo-icon {
+      font-size: 32px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 40px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-light);
+      font-weight: 600;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .nav-links a:hover {
+      color: var(--primary);
+    }
+
+    /* Hero */
+    .hero {
+      padding: 120px 0;
+      background: var(--gradient);
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 500px;
+      height: 500px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      filter: blur(100px);
+    }
+
+    .hero .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-content h1 {
+      font-size: 56px;
+      margin-bottom: 24px;
+      line-height: 1.15;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .hero-content p {
+      font-size: 20px;
+      margin-bottom: 12px;
+      opacity: 0.95;
+      font-weight: 500;
+    }
+
+    .subtitle {
+      font-size: 18px;
+      margin-bottom: 40px;
+      opacity: 0.85;
+      font-weight: 400;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 14px 36px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 700;
+      display: inline-block;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+      font-size: 16px;
+      letter-spacing: 0.3px;
+    }
+
+    .btn-primary {
+      background: white;
+      color: var(--primary);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: white;
+      border: 2px solid white;
+    }
+
+    .btn-secondary:hover {
+      background: white;
+      color: var(--primary);
+      transform: translateY(-4px);
+    }
+
+    .mockup {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+      transform: perspective(1000px) rotateY(-5px);
+      transition: transform 0.3s ease;
+    }
+
+    .mockup:hover {
+      transform: perspective(1000px) rotateY(0deg);
+    }
+
+    .mockup-screen {
+      background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+      border-radius: 12px;
+      padding: 24px;
+      height: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow: hidden;
+    }
+
+    .chat-bubble {
+      background: var(--gradient);
+      color: white;
+      padding: 14px 18px;
+      border-radius: 14px;
+      width: fit-content;
+      max-width: 85%;
+      font-size: 14px;
+      animation: slideIn 0.6s ease;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      font-weight: 500;
+    }
+
+    .chat-bubble.response {
+      background: #ffffff;
+      color: #333;
+      align-self: flex-end;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px) translateX(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) translateX(0);
+      }
+    }
+
+    /* Features */
+    .features {
+      padding: 100px 0;
+      background: var(--light);
+      position: relative;
+    }
+
+    .features h2 {
+      text-align: center;
+      font-size: 44px;
+      margin-bottom: 20px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .features > .container > p {
+      text-align: center;
+      color: var(--text-light);
+      font-size: 18px;
+      margin-bottom: 50px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 32px;
+    }
+
+    .feature-card {
+      background: white;
+      padding: 40px 32px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      transition: all 0.3s ease;
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--gradient);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15);
+    }
+
+    .feature-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .feature-icon {
+      font-size: 56px;
+      margin-bottom: 20px;
+      transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover .feature-icon {
+      transform: scale(1.1);
+    }
+
+    .feature-card h3 {
+      margin-bottom: 12px;
+      color: var(--text);
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .feature-card p {
+      color: var(--text-light);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* Download */
+    .download {
+      padding: 100px 0;
+      background: white;
+    }
+
+    .download h2 {
+      text-align: center;
+      font-size: 44px;
+      margin-bottom: 16px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .section-subtitle {
+      text-align: center;
+      font-size: 18px;
+      color: var(--text-light);
+      margin-bottom: 60px;
+      font-weight: 500;
+    }
+
+    .download-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 32px;
+    }
+
+    .os-card {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 40px 32px;
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .os-card:hover {
+      border-color: var(--primary);
+      box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15);
+      transform: translateY(-8px);
+    }
+
+    .os-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+      transition: transform 0.3s ease;
+    }
+
+    .os-card:hover .os-icon {
+      transform: scale(1.1);
+    }
+
+    .os-card h3 {
+      color: var(--text);
+      margin-bottom: 8px;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .os-card > p {
+      color: var(--text-light);
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    .btn-small {
+      padding: 11px 24px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    /* Setup */
+    .setup {
+      padding: 100px 0;
+      background: var(--light);
+    }
+
+    .setup h2 {
+      text-align: center;
+      font-size: 44px;
+      margin-bottom: 16px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .setup > .container > p {
+      text-align: center;
+      color: var(--text-light);
+      font-size: 18px;
+      margin-bottom: 50px;
+    }
+
+    .setup-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 40px;
+    }
+
+    .step {
+      text-align: center;
+    }
+
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 72px;
+      height: 72px;
+      background: var(--gradient);
+      color: white;
+      border-radius: 16px;
+      font-size: 36px;
+      font-weight: bold;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .step:hover .step-number {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
+    }
+
+    .step h3 {
+      margin-bottom: 15px;
+      color: var(--primary);
+    }
+
+    .step p {
+      color: var(--text-light);
+      margin-bottom: 15px;
+    }
+
+    .step ol {
+      text-align: left;
+      color: var(--text);
+      margin-left: 20px;
+    }
+
+    .step li {
+      margin-bottom: 8px;
+    }
+
+    .api-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .api-option {
+      background: white;
+      border: 1px solid var(--border);
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .api-option h4 {
+      color: var(--primary);
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .api-option a {
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    /* Docs */
+    .docs {
+      padding: 100px 0;
+    }
+
+    .docs h2 {
+      text-align: center;
+      font-size: 44px;
+      margin-bottom: 16px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .docs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 28px;
+      margin-top: 50px;
+    }
+
+    .doc-card {
+      background: white;
+      padding: 32px;
+      border-radius: 16px;
+      border-left: 5px solid var(--primary);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      transition: all 0.3s ease;
+      border: 1px solid var(--border);
+      border-left: 5px solid var(--primary);
+    }
+
+    .doc-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15);
+    }
+
+    .doc-card h3 {
+      margin-bottom: 12px;
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .doc-card p {
+      color: var(--text-light);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .faq {
+      margin-top: 80px;
+      background: white;
+      padding: 50px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+
+    .faq h3 {
+      color: var(--text);
+      margin-bottom: 40px;
+      font-size: 32px;
+      font-weight: 800;
+    }
+
+    .faq-item {
+      margin-bottom: 32px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+      transition: all 0.3s ease;
+    }
+
+    .faq-item:hover {
+      padding-left: 16px;
+    }
+
+    .faq-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .faq-item h4 {
+      color: var(--primary);
+      margin-bottom: 12px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .faq-item p {
+      color: var(--text-light);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    /* Footer */
+    footer {
+      background: linear-gradient(180deg, #0f172a 0%, #1a1f3a 100%);
+      color: white;
+      padding: 60px 0;
+      text-align: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    footer p {
+      margin: 8px 0;
+      font-size: 15px;
+      opacity: 0.9;
+    }
+
+    footer a {
+      color: white;
+      text-decoration: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero {
+        padding: 80px 0;
+      }
+
+      .hero-content h1 {
+        font-size: 40px;
+      }
+
+      .hero-content p {
+        font-size: 18px;
+      }
+
+      .hero .container {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+
+      .hero-buttons {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .btn {
+        width: 100%;
+        text-align: center;
+      }
+
+      .features-grid,
+      .download-options,
+      .docs-grid,
+      .setup-steps {
+        grid-template-columns: 1fr;
+      }
+
+      .nav-links {
+        gap: 20px;
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <div class="logo">
+        <span class="logo-icon">🤖</span>
+        <span>AI Screen Control</span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#download">Download</a></li>
+        <li><a href="#setup">Setup</a></li>
+        <li><a href="#docs">Docs</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <h1>Control Your Screen with AI</h1>
+        <p>Universal AI Assistant for Screen Control & Analysis</p>
+        <p class="subtitle">Talk to your screen. Take screenshots. Ask questions. Let AI help you work smarter.</p>
+        <div class="hero-buttons">
+          <a href="#download" class="btn btn-primary">📥 Download Now</a>
+          <a href="#docs" class="btn btn-secondary">Learn More →</a>
+        </div>
+      </div>
+      <div class="hero-image">
+        <div class="mockup">
+          <div class="mockup-screen">
+            <div class="chat-bubble">📸 What's on this page?</div>
+            <div class="chat-bubble response">✨ I can analyze anything you see and help!</div>
+            <div class="chat-bubble">🤖 Amazing!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section id="features" class="features">
+    <div class="container">
+      <h2>Everything You Need</h2>
+      <p>Powerful features that work instantly</p>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📸</div>
+          <h3>One-Click Screenshots</h3>
+          <p>Capture your screen instantly and ask AI anything about it. See results in seconds.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🤖</div>
+          <h3>Multiple AI Models</h3>
+          <p>Choose between Claude, GPT-4, Gemini. Switch anytime. Use your favorite API.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⌨️</div>
+          <h3>Smart Screen Control</h3>
+          <p>Let AI click buttons, type text, and control your computer with natural language.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🎥</div>
+          <h3>Video Analysis</h3>
+          <p>Upload YouTube links. Analyze videos. Get summaries and insights instantly.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">💾</div>
+          <h3>Your Data, Your Control</h3>
+          <p>API keys stay local. No data sold. 100% privacy. You decide what gets shared.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>Lightning Fast</h3>
+          <p>Instant screenshot. Real-time analysis. No waiting. Works offline where possible.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="download" class="download">
+    <div class="container">
+      <h2>Get Started Now</h2>
+      <p class="section-subtitle">Simple installation. Less than 1 minute.</p>
+
+      <div class="download-options">
+        <div class="os-card">
+          <div class="os-icon">🪟</div>
+          <h3>Windows</h3>
+          <p>Works on Windows 7+</p>
+          <a href="#" class="btn btn-small">📥 Download .exe</a>
+        </div>
+
+        <div class="os-card">
+          <div class="os-icon">🍎</div>
+          <h3>macOS</h3>
+          <p>Works on macOS 10.13+</p>
+          <a href="#" class="btn btn-small">📥 Download .dmg</a>
+        </div>
+
+        <div class="os-card">
+          <div class="os-icon">🐧</div>
+          <h3>Linux</h3>
+          <p>Ubuntu, Fedora, Arch & more</p>
+          <a href="#" class="btn btn-small">📥 Download</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="setup" class="setup">
+    <div class="container">
+      <h2>Setup Guide</h2>
+      <p class="section-subtitle">3 simple steps to get started</p>
+
+      <div class="setup-steps">
+        <div class="step">
+          <div class="step-number">1️⃣</div>
+          <h3>Download & Install</h3>
+          <p>Choose your OS above. Install takes 1 minute.</p>
+          <p style="font-size: 13px; color: #999; margin-top: 10px;">Works on Windows, Mac, Linux</p>
+        </div>
+
+        <div class="step">
+          <div class="step-number">2️⃣</div>
+          <h3>Get an API Key</h3>
+          <div class="api-options">
+            <div class="api-option">
+              <h4>🤖 Claude</h4>
+              <p><strong>Recommended</strong></p>
+            </div>
+            <div class="api-option">
+              <h4>⚡ OpenAI</h4>
+              <p><strong>Powerful</strong></p>
+            </div>
+            <div class="api-option">
+              <h4>🎨 Gemini</h4>
+              <p><strong>Free Tier</strong></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">3️⃣</div>
+          <h3>Configure & Go</h3>
+          <ol>
+            <li>Open AI Screen Control</li>
+            <li>Click ⚙️ Settings</li>
+            <li>Paste your API key</li>
+            <li>Click Save → You're done!</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="docs" class="docs">
+    <div class="container">
+      <h2>Features & FAQ</h2>
+      <p class="section-subtitle">Everything you need to know</p>
+
+      <div class="docs-grid">
+        <div class="doc-card">
+          <h3>📸 Screenshots</h3>
+          <p>Click the camera button, press keyboard shortcut, or drag-and-drop. Screenshot appears instantly in chat.</p>
+        </div>
+
+        <div class="doc-card">
+          <h3>💬 Ask Anything</h3>
+          <p>Type questions about what you see. "What's this button?", "Read this text", "Summarize this". AI analyzes and answers.</p>
+        </div>
+
+        <div class="doc-card">
+          <h3>🎮 Screen Commands</h3>
+          <p>Tell AI what to do. "Click submit", "Type my email", "Scroll down". AI does it for you (coming soon).</p>
+        </div>
+
+        <div class="doc-card">
+          <h3>🎥 Video Deep Dives</h3>
+          <p>Paste YouTube links. Ask AI to summarize, analyze, extract info. Perfect for research and learning.</p>
+        </div>
+
+        <div class="doc-card">
+          <h3>⚙️ Easy Settings</h3>
+          <p>One-click access. Paste API key. Choose your AI. That's it. No complicated configuration needed.</p>
+        </div>
+
+        <div class="doc-card">
+          <h3>🔐 Your Privacy</h3>
+          <p>Screenshots ONLY to your AI. Your API key stays local. No tracking. No data collection. Period.</p>
+        </div>
+      </div>
+
+      <div class="faq">
+        <h3>❓ Common Questions</h3>
+        <div class="faq-item">
+          <h4>💰 Which AI API should I choose?</h4>
+          <p><strong>Claude:</strong> Best overall, great for everything. <strong>GPT-4:</strong> Excellent analysis. <strong>Gemini:</strong> Free tier available, good for video.</p>
+        </div>
+        <div class="faq-item">
+          <h4>🔒 Is my data private?</h4>
+          <p>Yes! 100%. Screenshots go ONLY to your chosen AI API. We never see your data. Your API key stays on your computer.</p>
+        </div>
+        <div class="faq-item">
+          <h4>🔄 Can I use multiple API keys?</h4>
+          <p>Absolutely! Configure as many as you want. Switch between them anytime. Use different APIs for different tasks.</p>
+        </div>
+        <div class="faq-item">
+          <h4>🌐 Do I need internet?</h4>
+          <p>Yes, internet is needed to use AI features. Screenshots work offline, but AI analysis requires a connection.</p>
+        </div>
+        <div class="faq-item">
+          <h4>💳 Will it cost money?</h4>
+          <p>Only if you use paid AI APIs. All APIs have free tiers. Gemini has free tier always. Claude/OpenAI charge per usage.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p><strong>AI Screen Control</strong> • Open Source • MIT License</p>
+      <p>Made with ❤️ for creators, developers, and AI enthusiasts</p>
+    </div>
+  </footer>
+</body>
+</html>

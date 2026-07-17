@@ -9,8 +9,13 @@ name: Build Installers
 
 on:
   push:
+    # Pushing a v* tag creates a public Release with the installers.
     tags:
       - "v*"
+    # Pushing to the development branch builds installers and uploads them
+    # as downloadable workflow artifacts (no release needed).
+    branches:
+      - "claude/chrome-ai-screen-control-2o2ttt"
   workflow_dispatch:
     inputs:
       tag:
@@ -69,13 +74,17 @@ jobs:
         working-directory: ai-screen-control
         run: npx tauri icon src-tauri/icons/icon.png
 
-      - name: Build and release
+      - name: Build the app (and release on tags)
+        id: tauri
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: ai-screen-control
-          tagName: ${{ github.event.inputs.tag || github.ref_name }}
+          # Only create a GitHub Release when triggered by a version tag or a
+          # manual dispatch. On a plain branch push, tagName is empty so the
+          # action just builds and we upload the installers as artifacts below.
+          tagName: ${{ github.event.inputs.tag || (startsWith(github.ref, 'refs/tags/') && github.ref_name) || '' }}
           releaseName: "AI Screen Control ${{ github.event.inputs.tag || github.ref_name }}"
           releaseBody: |
             ## AI Screen Control — Installers
@@ -90,3 +99,18 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
+
+      - name: Upload installers as downloadable artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: installers-${{ matrix.platform }}
+          # Grab every built installer, whichever target dir it landed in.
+          path: |
+            ai-screen-control/src-tauri/target/**/release/bundle/**/*.dmg
+            ai-screen-control/src-tauri/target/**/release/bundle/**/*.app.tar.gz
+            ai-screen-control/src-tauri/target/release/bundle/**/*.msi
+            ai-screen-control/src-tauri/target/release/bundle/**/*.exe
+            ai-screen-control/src-tauri/target/release/bundle/**/*.AppImage
+            ai-screen-control/src-tauri/target/release/bundle/**/*.deb
+            ai-screen-control/src-tauri/target/release/bundle/**/*.rpm
+          if-no-files-found: warn

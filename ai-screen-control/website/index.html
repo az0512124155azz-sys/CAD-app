@@ -339,6 +339,34 @@
     }
     .modal-note strong { color: #92400e; }
 
+    /* Command block with copy button */
+    .cmd-block {
+      display: flex; align-items: center; gap: 10px;
+      background: #0f172a; border-radius: 8px;
+      padding: 8px 8px 8px 14px; margin: 8px 0;
+    }
+    .cmd-block code {
+      flex: 1; color: #34d399; font-family: 'Courier New', monospace;
+      font-size: 13px; overflow-x: auto; white-space: nowrap;
+    }
+    .copy-btn {
+      flex-shrink: 0; background: var(--gradient); color: #fff; border: none;
+      border-radius: 6px; padding: 7px 16px; font-size: 12px; font-weight: 700;
+      cursor: pointer; font-family: inherit; transition: all 0.2s ease;
+    }
+    .copy-btn:hover { opacity: 0.9; }
+    .copy-btn.copied { background: #10b981; }
+
+    /* Clickable link chips (open in browser) */
+    .link-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .link-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--light); border: 1px solid var(--border);
+      border-radius: 8px; padding: 9px 15px; text-decoration: none;
+      color: var(--primary); font-weight: 600; font-size: 13px; transition: all 0.2s ease;
+    }
+    .link-chip:hover { border-color: var(--primary); background: #fff; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102,126,234,0.15); }
+
     .provider-note {
       max-width: 760px; margin: 40px auto 0; text-align: center;
       background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
@@ -619,7 +647,7 @@
         <h3>Need help or found a barrier?</h3>
         <p>If you encounter any accessibility barrier, or need assistance using this site or the app, please contact us and we will respond promptly:</p>
         <p>📧 <a href="mailto:accessibility@aiscreencontrol.app">accessibility@aiscreencontrol.app</a><br>
-        🐛 <a href="https://github.com/az0512124155azz-sys/CAD-app/issues" target="_blank" rel="noopener">Report an issue on GitHub</a></p>
+        🐛 <a href="https://github.com/az0512124155azz-sys/cad-app/issues" target="_blank" rel="noopener">Report an issue on GitHub</a></p>
 
         <p style="margin-top:18px; font-size:13px;">This statement was last reviewed on July 17, 2026. Accessibility is an ongoing effort, and we welcome your feedback.</p>
       </div>
@@ -633,7 +661,7 @@
       <p>Made with ❤️ for creators, developers, and AI enthusiasts</p>
       <p style="margin-top:14px;">
         <a href="#accessibility">Accessibility Statement</a> &nbsp;•&nbsp;
-        <a href="https://github.com/az0512124155azz-sys/CAD-app" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/az0512124155azz-sys/cad-app" target="_blank" rel="noopener">GitHub</a>
       </p>
     </div>
   </footer>
@@ -658,6 +686,9 @@
       macos:   { name: 'macOS',   icon: '🍎' },
       linux:   { name: 'Linux',   icon: '🐧' }
     };
+
+    // GitHub repository URL (edit here if the repo path changes)
+    var REPO_URL = 'https://github.com/az0512124155azz-sys/cad-app';
 
     var currentOS = null;
     var DL_CACHE = '';
@@ -709,30 +740,29 @@
         '</div>';
     }
 
-    // Step 2: user picked a method -> auto-download + show instructions
+    // Step 2: user picked a method -> show on-screen guide
+    // (copy buttons for commands, clickable links that open in the browser).
     function chooseMethod(method) {
       var cfg = OS_CONFIG[currentOS];
-      var file = buildDownloadFile(currentOS, method);
-      DL_CACHE = file.content;
-      DL_FILENAME = file.filename;
-      // Auto-download immediately
-      triggerDownload(file.filename, file.content);
-
-      var backBtn = '<button class="modal-back" onclick="renderChoiceStep()">← Back to methods</button>';
-      var banner =
-        '<div class="download-banner">' +
-          '<div class="dl-icon">✅</div>' +
-          '<div class="dl-text"><strong>Download started: ' + file.filename + '</strong>' +
-          '<p>Check your Downloads folder. Follow the steps below to install.</p></div>' +
-        '</div>';
-
-      var title = (method === 'installer' ? '📦 Installer' : '🛠️ Manual') + ' — ' + cfg.name;
+      var title = (method === 'installer' ? '📦 Quick Setup' : '🛠️ Manual Install') + ' — ' + cfg.name;
       document.getElementById('modalTitle').textContent = title;
       document.getElementById('modalBody').innerHTML =
-        backBtn + banner +
+        '<button class="modal-back" onclick="renderChoiceStep()">← Back to methods</button>' +
         renderInstructions(currentOS, method) +
-        '<button class="redownload-btn" onclick="triggerDownload(DL_FILENAME, DL_CACHE)">' +
-        '⬇️ Download the file again</button>';
+        '<div class="modal-note" role="note">' +
+          '🎥 <strong>YouTube video analysis requires a Gemini API key</strong> — only Gemini can read full video content. ' +
+          'You can also connect several AI providers and use them in parallel.' +
+        '</div>' +
+        '<button class="redownload-btn" onclick="saveGuide(\'' + method + '\')">' +
+        '💾 Save these steps as a text file (optional)</button>';
+      // Reset scroll to top of the dialog body
+      document.getElementById('modalBody').scrollTop = 0;
+    }
+
+    // Optional: let the user save the same steps as a .txt file
+    function saveGuide(method) {
+      var file = buildDownloadFile(currentOS, method);
+      triggerDownload(file.filename, file.content);
     }
 
     // Build the file that gets downloaded.
@@ -762,7 +792,7 @@
 
     // ---- Quick setup guide (text) ----
     function quickSetupGuide(os) {
-      var cloneLine = 'git clone https://github.com/az0512124155azz-sys/CAD-app.git';
+      var cloneLine = 'git clone https://github.com/az0512124155azz-sys/cad-app.git';
       var pre = {
         windows: 'Node.js  -> https://nodejs.org  (LTS version)\nGit      -> https://git-scm.com/download/win',
         macos:   'Node.js  -> https://nodejs.org  (LTS version)\nGit      -> comes with: xcode-select --install',
@@ -773,7 +803,7 @@
         'STEP 1 - Install these first:\r\n' + pre + '\r\n\r\n' +
         'STEP 2 - Open a terminal (Command Prompt / Terminal) and run:\r\n\r\n' +
         '  ' + cloneLine + '\r\n' +
-        '  cd CAD-app/ai-screen-control\r\n' +
+        '  cd cad-app/ai-screen-control\r\n' +
         '  npm install\r\n' +
         '  npm run tauri-dev\r\n\r\n' +
         'STEP 3 - Add your API key:\r\n' +
@@ -799,8 +829,8 @@
         '======================================================\r\n\r\n' +
         'PREREQUISITES:\r\n' + pre + '\r\n\r\n' +
         'STEPS:\r\n' +
-        '  git clone https://github.com/az0512124155azz-sys/CAD-app.git\r\n' +
-        '  cd CAD-app/ai-screen-control\r\n' +
+        '  git clone https://github.com/az0512124155azz-sys/cad-app.git\r\n' +
+        '  cd cad-app/ai-screen-control\r\n' +
         '  npm install\r\n' +
         '  npm run tauri-dev            # run in dev mode\r\n' +
         '  npm run tauri-build          # OR build a native installer\r\n\r\n' +
@@ -815,41 +845,85 @@
         'You can configure multiple API keys and run several AIs in parallel.\r\n';
     }
 
-    // ---- On-screen instructions (HTML) ----
-    // Same for both methods: copy-paste commands (no blocked scripts).
+    // ---- On-screen instructions: copy buttons + clickable links ----
     function renderInstructions(os, method) {
-      var termName = os === 'windows' ? 'Command Prompt' : 'Terminal';
-      var steps = [
-        ['Install prerequisites', method === 'installer'
-          ? 'You need <strong>Node.js</strong> and <strong>Git</strong> installed. The downloaded guide has the links.'
-          : 'You need <strong>Node.js</strong>, <strong>Rust</strong> and build tools. Full details are in the downloaded guide.'],
-        ['Open a terminal', 'Open <strong>' + termName + '</strong> and copy-paste this command:',
-          'git clone https://github.com/az0512124155azz-sys/CAD-app.git'],
-        ['Install & run', 'Then run these three commands:',
-          'cd CAD-app/ai-screen-control\nnpm install\nnpm run ' + (method === 'installer' ? 'tauri-dev' : 'tauri-build')],
-        ['Add your API key', 'Open the app, click Settings (gear), paste your API key, and Save.']
-      ];
-      var note =
-        '<div class="modal-note" role="note">' +
-        '🎥 <strong>YouTube video analysis requires a Gemini API key.</strong> ' +
-        'You can also add several API keys and use multiple AIs at the same time.' +
-        '</div>';
-      return list(steps) + note;
+      var termName = os === 'windows' ? 'Command Prompt (search "cmd" in Start)' : 'Terminal';
+      var runCmd = method === 'installer' ? 'npm run tauri-dev' : 'npm run tauri-build';
+
+      var preLinks;
+      if (method === 'installer') {
+        preLinks = linkChip('https://nodejs.org', 'Download Node.js') +
+          (os === 'windows' ? linkChip('https://git-scm.com/download/win', 'Download Git') : '');
+      } else {
+        preLinks = linkChip('https://nodejs.org', 'Download Node.js') +
+          linkChip('https://rustup.rs', 'Install Rust');
+      }
+
+      var html = '<ol class="install-steps">';
+
+      html += '<li><strong>Install the prerequisites</strong>' +
+        '<span>Click to open each page and install it (all free):</span>' +
+        '<div class="link-row">' + preLinks + '</div></li>';
+
+      html += '<li><strong>Open ' + termName + '</strong>' +
+        '<span>Copy each line with its <em>Copy</em> button, paste it, and press Enter — one at a time:</span>' +
+        cmd('git clone ' + REPO_URL + '.git') +
+        cmd('cd cad-app/ai-screen-control') +
+        cmd('npm install') +
+        cmd(runCmd) +
+        '</li>';
+
+      html += '<li><strong>Add your API key</strong>' +
+        '<span>Open the app → Settings (gear) → paste your key → Save. Click a provider to get a key:</span>' +
+        '<div class="link-row">' +
+          linkChip('https://console.anthropic.com/settings/keys', '🤖 Get Claude key') +
+          linkChip('https://platform.openai.com/api-keys', '⚡ Get OpenAI key') +
+          linkChip('https://aistudio.google.com/app/apikey', '🎨 Get Gemini key') +
+        '</div></li>';
+
+      html += '</ol>';
+
+      html += '<div class="link-row" style="justify-content:center; margin-top:6px;">' +
+        linkChip(REPO_URL, '📂 Open the GitHub repository') + '</div>';
+
+      return html;
     }
 
-    function list(steps) {
-      var html = '<ol class="install-steps">';
-      for (var i = 0; i < steps.length; i++) {
-        var s = steps[i];
-        html += '<li><strong>' + s[0] + '</strong><span>' + s[1] + '</span>';
-        if (s[2]) {
-          var display = s[2].replace(/\n/g, '<br>');
-          html += '<code class="code-line">' + display + '</code>';
-        }
-        html += '</li>';
+    // A command line with a working Copy button
+    function cmd(command) {
+      return '<div class="cmd-block"><code>' + escapeHtml(command) + '</code>' +
+        '<button class="copy-btn" onclick="copyCmd(this)" aria-label="Copy command">Copy</button></div>';
+    }
+
+    // A clickable link that opens in a new browser tab
+    function linkChip(url, label) {
+      return '<a class="link-chip" href="' + url + '" target="_blank" rel="noopener">' + label + ' ↗</a>';
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // Copy the command text to the clipboard, with visual feedback
+    function copyCmd(btn) {
+      var text = btn.parentNode.querySelector('code').textContent;
+      var done = function () {
+        btn.textContent = '✓ Copied'; btn.classList.add('copied');
+        setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text); done(); });
+      } else {
+        fallbackCopy(text); done();
       }
-      html += '</ol>';
-      return html;
+    }
+    function fallbackCopy(text) {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
     }
 
     // Close on overlay click / Escape, and trap focus inside the dialog

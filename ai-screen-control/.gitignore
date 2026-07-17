@@ -1,0 +1,28 @@
+# Vite
+dist/
+.vite/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Rust/Cargo
+target/
+Cargo.lock
+src-tauri/icons/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+.eslintcache

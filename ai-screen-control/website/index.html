@@ -689,6 +689,8 @@
 
     // GitHub repository URL (edit here if the repo path changes)
     var REPO_URL = 'https://github.com/az0512124155azz-sys/cad-app';
+    // Where the ready-made installers live (created by the build workflow)
+    var RELEASES_URL = REPO_URL + '/releases/latest';
 
     var currentOS = null;
     var DL_CACHE = '';
@@ -723,18 +725,18 @@
         '<p style="text-align:center; color:var(--text-light); margin-bottom:28px; font-size:15px;">' +
         'How would you like to install AI Screen Control?</p>' +
         '<div class="choice-grid">' +
-          '<div class="choice-card" role="button" tabindex="0" aria-label="Quick Setup guide" ' +
+          '<div class="choice-card" role="button" tabindex="0" aria-label="Download the installer file" ' +
             'onclick="chooseMethod(\'installer\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();chooseMethod(\'installer\');}">' +
             '<div class="choice-icon" aria-hidden="true">📦</div>' +
-            '<h4>Quick Setup</h4>' +
-            '<p>Download a short setup guide and run 4 copy-paste commands. The fast way.</p>' +
+            '<h4>Download Installer</h4>' +
+            '<p>Get the ready-made installer file, run it, and the app installs itself. No terminal.</p>' +
             '<span class="choice-tag">Easiest • Recommended</span>' +
           '</div>' +
-          '<div class="choice-card" role="button" tabindex="0" aria-label="Manual install guide" ' +
+          '<div class="choice-card" role="button" tabindex="0" aria-label="Build from source" ' +
             'onclick="chooseMethod(\'manual\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();chooseMethod(\'manual\');}">' +
             '<div class="choice-icon" aria-hidden="true">🛠️</div>' +
-            '<h4>Manual Install</h4>' +
-            '<p>Build a native installer from source with full control. For developers.</p>' +
+            '<h4>Build from Source</h4>' +
+            '<p>Compile it yourself with full control. For developers.</p>' +
             '<span class="choice-tag">Advanced</span>' +
           '</div>' +
         '</div>';
@@ -790,27 +792,42 @@
       setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
     }
 
-    // ---- Quick setup guide (text) ----
+    // ---- Screen-control permission text (shared) ----
+    function screenControlText(os) {
+      if (os === 'windows') {
+        return 'ENABLE SCREEN CONTROL:\r\n' +
+          '  Nothing to type. Screen capture and control work automatically.\r\n' +
+          '  If Windows Firewall asks, click Allow.\r\n';
+      }
+      if (os === 'macos') {
+        return 'ENABLE SCREEN CONTROL:\r\n' +
+          '  Open System Settings > Privacy & Security and turn ON\r\n' +
+          '  "AI Screen Control" under BOTH: Screen Recording AND Accessibility.\r\n' +
+          '  If macOS blocks the app as unverified, run this once in Terminal:\r\n' +
+          '    xattr -dr com.apple.quarantine "/Applications/AI Screen Control.app"\r\n';
+      }
+      return 'ENABLE SCREEN CONTROL:\r\n' +
+        '  Install the tools the app uses to capture/control the screen:\r\n' +
+        '    sudo apt install -y xdotool gnome-screenshot\r\n' +
+        '  On Wayland, allow screen sharing when your desktop asks.\r\n';
+    }
+
+    // ---- Installer guide (text) ----
     function quickSetupGuide(os) {
-      var cloneLine = 'git clone https://github.com/az0512124155azz-sys/cad-app.git';
-      var pre = {
-        windows: 'Node.js  -> https://nodejs.org  (LTS version)\nGit      -> https://git-scm.com/download/win',
-        macos:   'Node.js  -> https://nodejs.org  (LTS version)\nGit      -> comes with: xcode-select --install',
-        linux:   'Node.js  -> https://nodejs.org  (or your package manager)\nGit      -> sudo apt install git'
+      var fileName = { windows: '.msi / .exe', macos: '.dmg', linux: '.AppImage or .deb' }[os];
+      var run = {
+        windows: '  Double-click the file. If SmartScreen appears: More info > Run anyway.',
+        macos:   '  Open the .dmg, drag the app to Applications, then right-click > Open.',
+        linux:   '  chmod +x AIScreenControl*.AppImage  &&  ./AIScreenControl*.AppImage'
       }[os];
-      return 'AI SCREEN CONTROL - QUICK SETUP (' + OS_CONFIG[os].name + ')\r\n' +
+      return 'AI SCREEN CONTROL - INSTALLER (' + OS_CONFIG[os].name + ')\r\n' +
         '======================================================\r\n\r\n' +
-        'STEP 1 - Install these first:\r\n' + pre + '\r\n\r\n' +
-        'STEP 2 - Open a terminal (Command Prompt / Terminal) and run:\r\n\r\n' +
-        '  ' + cloneLine + '\r\n' +
-        '  cd cad-app/ai-screen-control\r\n' +
-        '  npm install\r\n' +
-        '  npm run tauri-dev\r\n\r\n' +
-        'STEP 3 - Add your API key:\r\n' +
-        '  1. The app opens automatically\r\n' +
-        '  2. Click the Settings (gear) icon\r\n' +
-        '  3. Paste your API key\r\n' +
-        '  4. Click Save - done!\r\n\r\n' +
+        'STEP 1 - Download the ' + fileName + ' installer:\r\n' +
+        '  ' + RELEASES_URL + '\r\n\r\n' +
+        'STEP 2 - Run the installer:\r\n' + run + '\r\n\r\n' +
+        'STEP 3 - ' + screenControlText(os) + '\r\n' +
+        'STEP 4 - Add your API key:\r\n' +
+        '  Open the app > Settings (gear) > paste your key > Save.\r\n\r\n' +
         'GET AN API KEY:\r\n' +
         '  Claude  -> https://console.anthropic.com/settings/keys\r\n' +
         '  OpenAI  -> https://platform.openai.com/api-keys\r\n' +
@@ -819,45 +836,73 @@
         'You can also add several API keys and use multiple AIs at once.\r\n';
     }
 
+    // ---- Build-from-source guide (text) ----
     function manualGuide(os) {
       var pre = {
         windows: 'Node.js (https://nodejs.org), Rust (https://rustup.rs), and Visual C++ Build Tools.',
         macos:   'Node.js (https://nodejs.org), Rust (https://rustup.rs), and Xcode CLT: xcode-select --install',
-        linux:   'Node.js, Rust (https://rustup.rs), and: sudo apt install libgtk-3-dev libwebkit2gtk-4.0-dev build-essential'
+        linux:   'Node.js, Rust (https://rustup.rs), and: sudo apt install libwebkit2gtk-4.1-dev build-essential'
       }[os];
-      return 'AI SCREEN CONTROL - MANUAL INSTALLATION (' + OS_CONFIG[os].name + ')\r\n' +
+      return 'AI SCREEN CONTROL - BUILD FROM SOURCE (' + OS_CONFIG[os].name + ')\r\n' +
         '======================================================\r\n\r\n' +
-        'PREREQUISITES:\r\n' + pre + '\r\n\r\n' +
-        'STEPS:\r\n' +
-        '  git clone https://github.com/az0512124155azz-sys/cad-app.git\r\n' +
+        'PREREQUISITES:\r\n  ' + pre + '\r\n\r\n' +
+        'BUILD:\r\n' +
+        '  git clone ' + REPO_URL + '.git\r\n' +
         '  cd cad-app/ai-screen-control\r\n' +
         '  npm install\r\n' +
-        '  npm run tauri-dev            # run in dev mode\r\n' +
-        '  npm run tauri-build          # OR build a native installer\r\n\r\n' +
-        'The built installer will be in:\r\n' +
+        '  npm run tauri-build\r\n\r\n' +
+        'The finished installer will be in:\r\n' +
         '  src-tauri/target/release/bundle/\r\n\r\n' +
-        'AFTER INSTALL:\r\n' +
-        '  1. Open the app\r\n' +
-        '  2. Click Settings (gear icon)\r\n' +
-        '  3. Paste your API key (get one at console.anthropic.com)\r\n' +
-        '  4. Save and start using!\r\n\r\n' +
+        screenControlText(os) + '\r\n' +
+        'ADD YOUR API KEY:\r\n' +
+        '  Open the app > Settings (gear) > paste your key > Save.\r\n\r\n' +
         'NOTE: YouTube video analysis requires a Gemini API key.\r\n' +
         'You can configure multiple API keys and run several AIs in parallel.\r\n';
     }
 
     // ---- On-screen instructions: copy buttons + clickable links ----
     function renderInstructions(os, method) {
-      var termName = os === 'windows' ? 'Command Prompt (search "cmd" in Start)' : 'Terminal';
-      var runCmd = method === 'installer' ? 'npm run tauri-dev' : 'npm run tauri-build';
+      return method === 'installer' ? installerFlow(os) : sourceFlow(os);
+    }
 
-      var preLinks;
-      if (method === 'installer') {
-        preLinks = linkChip('https://nodejs.org', 'Download Node.js') +
-          (os === 'windows' ? linkChip('https://git-scm.com/download/win', 'Download Git') : '');
-      } else {
-        preLinks = linkChip('https://nodejs.org', 'Download Node.js') +
-          linkChip('https://rustup.rs', 'Install Rust');
-      }
+    // Real installer flow: download the file, run it, grant permissions
+    function installerFlow(os) {
+      var fileName = { windows: '.msi / .exe installer', macos: '.dmg installer', linux: '.AppImage or .deb' }[os];
+      var runStep = {
+        windows: '<span>Double-click the downloaded file. If Windows SmartScreen appears, click ' +
+          '<strong>More info → Run anyway</strong> (the app is new, not signed yet), then follow the setup.</span>',
+        macos: '<span>Open the .dmg and drag the app to <strong>Applications</strong>. ' +
+          'The first time, <strong>right-click the app → Open</strong> to bypass the "unidentified developer" warning.</span>',
+        linux: '<span>Make the .AppImage executable and run it, or install the .deb:</span>' +
+          cmd('chmod +x AIScreenControl*.AppImage') +
+          cmd('./AIScreenControl*.AppImage')
+      }[os];
+
+      var html = '<ol class="install-steps">';
+
+      html += '<li><strong>Download the installer</strong>' +
+        '<span>Get the ' + fileName + ' for ' + OS_CONFIG[os].name + ' from the releases page:</span>' +
+        '<div class="link-row"><a class="link-chip" style="background:var(--gradient);color:#fff;border:none;" ' +
+          'href="' + RELEASES_URL + '" target="_blank" rel="noopener">📥 Download the installer ↗</a></div></li>';
+
+      html += '<li><strong>Run the installer</strong>' + runStep + '</li>';
+
+      html += screenControlStep(os);
+
+      html += '<li><strong>Add your API key</strong>' +
+        '<span>Open the app → Settings (gear) → paste your key → Save. Click a provider to get a key:</span>' +
+        apiKeyLinks() + '</li>';
+
+      html += '</ol>';
+      return html;
+    }
+
+    // Build-from-source flow (for developers)
+    function sourceFlow(os) {
+      var termName = os === 'windows' ? 'Command Prompt (search "cmd" in Start)' : 'Terminal';
+      var preLinks = linkChip('https://nodejs.org', 'Download Node.js') +
+        linkChip('https://rustup.rs', 'Install Rust') +
+        (os === 'windows' ? linkChip('https://git-scm.com/download/win', 'Download Git') : '');
 
       var html = '<ol class="install-steps">';
 
@@ -870,23 +915,48 @@
         cmd('git clone ' + REPO_URL + '.git') +
         cmd('cd cad-app/ai-screen-control') +
         cmd('npm install') +
-        cmd(runCmd) +
-        '</li>';
+        cmd('npm run tauri-build') +
+        '<span>The finished installer appears in <code>src-tauri/target/release/bundle/</code>.</span></li>';
+
+      html += screenControlStep(os);
 
       html += '<li><strong>Add your API key</strong>' +
         '<span>Open the app → Settings (gear) → paste your key → Save. Click a provider to get a key:</span>' +
-        '<div class="link-row">' +
-          linkChip('https://console.anthropic.com/settings/keys', '🤖 Get Claude key') +
-          linkChip('https://platform.openai.com/api-keys', '⚡ Get OpenAI key') +
-          linkChip('https://aistudio.google.com/app/apikey', '🎨 Get Gemini key') +
-        '</div></li>';
+        apiKeyLinks() + '</li>';
 
       html += '</ol>';
-
       html += '<div class="link-row" style="justify-content:center; margin-top:6px;">' +
         linkChip(REPO_URL, '📂 Open the GitHub repository') + '</div>';
-
       return html;
+    }
+
+    // Shared step: what the user must do so the app can control the screen + show the bubble
+    function screenControlStep(os) {
+      if (os === 'windows') {
+        return '<li><strong>Enable screen control</strong>' +
+          '<span>Nothing to type — screen capture and control work automatically on Windows. ' +
+          'If Windows Firewall asks, click <strong>Allow</strong>. The floating bubble appears once the app is open.</span></li>';
+      }
+      if (os === 'macos') {
+        return '<li><strong>Enable screen control</strong>' +
+          '<span>Give the app permission so it can see and control your screen and show the bubble. ' +
+          'Open <strong>System Settings → Privacy & Security</strong> and switch <em>AI Screen Control</em> ON under both ' +
+          '<strong>Screen Recording</strong> and <strong>Accessibility</strong>. If the app is blocked as unverified, run this once in Terminal:</span>' +
+          cmd('xattr -dr com.apple.quarantine "/Applications/AI Screen Control.app"') +
+          '</li>';
+      }
+      return '<li><strong>Enable screen control</strong>' +
+        '<span>Install the small system tools the app uses to capture and control the screen, then open the app — the bubble appears:</span>' +
+        cmd('sudo apt install -y xdotool gnome-screenshot') +
+        '<span>On Wayland sessions, allow screen sharing when your desktop asks.</span></li>';
+    }
+
+    function apiKeyLinks() {
+      return '<div class="link-row">' +
+        linkChip('https://console.anthropic.com/settings/keys', '🤖 Get Claude key') +
+        linkChip('https://platform.openai.com/api-keys', '⚡ Get OpenAI key') +
+        linkChip('https://aistudio.google.com/app/apikey', '🎨 Get Gemini key') +
+        '</div>';
     }
 
     // A command line with a working Copy button

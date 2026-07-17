@@ -11,7 +11,9 @@ pnpm-debug.log
 # Rust/Cargo
 target/
 Cargo.lock
-src-tauri/icons/
+# Icons are generated in CI from icon.png; keep only the source
+src-tauri/icons/*
+!src-tauri/icons/icon.png
 
 # IDE
 .vscode/

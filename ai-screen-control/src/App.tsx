@@ -4,6 +4,7 @@ import { Mic, Send, Settings, Loader } from 'lucide-react';
 import FloatingBubble from './components/FloatingBubble';
 import ChatInterface from './components/ChatInterface';
 import SettingsPanel from './components/SettingsPanel';
+import VideoAnalyzer from './components/VideoAnalyzer';
 import './App.css';
 
 interface Message {
@@ -18,6 +19,7 @@ export default function App() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
   const [apiKey, setApiKey] = useState(localStorage.getItem('claude_api_key') || '');
   const [screenshot, setScreenshot] = useState<string | null>(null);
   const [isBubbleVisible, setIsBubbleVisible] = useState(true);
@@ -104,6 +106,10 @@ export default function App() {
     );
   }
 
+  if (showVideo) {
+    return <VideoAnalyzer onClose={() => setShowVideo(false)} />;
+  }
+
   return (
     <div className="app-container">
       {isBubbleVisible && (
@@ -125,6 +131,7 @@ export default function App() {
         inputRef={inputRef}
         screenshot={screenshot}
         showSettings={() => setShowSettings(true)}
+        showVideoAnalyzer={() => setShowVideo(true)}
         toggleBubble={() => setIsBubbleVisible(!isBubbleVisible)}
       />
     </div>

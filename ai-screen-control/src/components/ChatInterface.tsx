@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Send, Camera, Settings, MessageSquare, Loader } from 'lucide-react';
+import { Send, Camera, Settings, MessageSquare, Loader, Film } from 'lucide-react';
 import '../styles/ChatInterface.css';
 
 interface Message {
@@ -19,6 +19,7 @@ interface ChatInterfaceProps {
   inputRef: React.RefObject<HTMLInputElement>;
   screenshot: string | null;
   showSettings: () => void;
+  showVideoAnalyzer: () => void;
   toggleBubble: () => void;
 }
 
@@ -32,6 +33,7 @@ export default function ChatInterface({
   inputRef,
   screenshot,
   showSettings,
+  showVideoAnalyzer,
   toggleBubble,
 }: ChatInterfaceProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -55,6 +57,9 @@ export default function ChatInterface({
           <span>AI Screen Control</span>
         </div>
         <div className="header-actions">
+          <button className="icon-btn" onClick={showVideoAnalyzer} title="Analyze Video / Audio (local, no API)">
+            <Film size={18} />
+          </button>
           <button className="icon-btn" onClick={showSettings} title="Settings">
             <Settings size={18} />
           </button>

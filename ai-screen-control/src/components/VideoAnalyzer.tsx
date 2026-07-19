@@ -43,7 +43,16 @@ export default function VideoAnalyzer({ onClose }: VideoAnalyzerProps) {
 
   useEffect(() => {
     invoke<MediaTools>('check_media_tools')
-      .then(setTools)
+      .then((t) => {
+        setTools(t);
+        // Auto-pick an installed vision model (newest first) so it just works.
+        const vision = t.ollama_models.find((m) =>
+          ['gemma3', 'llava', 'vision', 'moondream', 'qwen2.5vl', 'qwen3-vl', 'minicpm-v'].some(
+            (v) => m.includes(v)
+          )
+        );
+        if (vision) setVisionModel(vision);
+      })
       .catch(() => setTools(null));
 
     const unlisten = listen<Progress>('media-progress', (event) => {

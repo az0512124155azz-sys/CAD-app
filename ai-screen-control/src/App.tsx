@@ -71,11 +71,11 @@ export default function App() {
   // Prefer a vision-capable local model when chatting through Ollama.
   const pickOllamaModel = () => {
     const models = ollama.models;
-    return (
-      models.find((m) => m.includes('llava') || m.includes('vision') || m.includes('moondream')) ||
-      models[0] ||
-      'llava'
-    );
+    const isVision = (m: string) =>
+      ['gemma3', 'llava', 'vision', 'moondream', 'qwen2.5vl', 'qwen3-vl', 'minicpm-v'].some((v) =>
+        m.includes(v)
+      );
+    return models.find(isVision) || models[0] || 'gemma3';
   };
 
   const sendMessage = async (text?: string) => {

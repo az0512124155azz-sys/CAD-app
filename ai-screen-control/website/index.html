@@ -729,14 +729,16 @@ body > main > #reviews, body > main > #accessibility { background: var(--light);
         <div class="localai-steps">
           <div class="localai-step">
             <span class="step-num">1</span>
-            <h4>Install Ollama</h4>
-            <p>One-click download for Windows, macOS & Linux.</p>
+            <h4>Install the latest Ollama</h4>
+            <p>One-click download for Windows, macOS &amp; Linux. Already have it? Install again to update — new models need the newest version.</p>
             <a class="localai-link" href="https://ollama.com/download" target="_blank" rel="noopener">ollama.com/download ↗</a>
           </div>
           <div class="localai-step">
             <span class="step-num">2</span>
             <h4>Download a vision model</h4>
-            <p>Open a terminal and run this once:</p>
+            <p>Open a terminal and run this once (newest model):</p>
+            <code>ollama pull gemma3</code>
+            <p style="margin-top:8px;">Older / weaker computer? Use:</p>
             <code>ollama pull llava</code>
           </div>
           <div class="localai-step">
@@ -1245,15 +1247,16 @@ body > main > #reviews, body > main > #accessibility { background: var(--light);
       var steps = '<ol class="install-steps">';
 
       // 1. Install
-      steps += '<li><strong>Install Ollama</strong><span>' + runVerify + '</span>' +
+      steps += '<li><strong>Install the latest Ollama</strong><span>' + runVerify +
+        ' Already installed? Run the installer again to update — the newest models need the newest Ollama.</span>' +
         (os === 'linux' ? cmd('curl -fsSL https://ollama.com/install.sh | sh') : '') + '</li>';
 
       // 2. Download the model
       steps += '<li><strong>Download a model that can see the screen</strong>' +
         '<span>Open a terminal (' + (os === 'windows' ? 'search “cmd” in Start' : 'Terminal') +
         ') and run this once. It\'s a few GB, so give it a minute:</span>' +
-        cmd('ollama pull llava') +
-        '<span>When it finishes, the free AI is ready.</span></li>';
+        cmd('ollama pull gemma3') +
+        '<span>On an older or weaker computer, use <code>ollama pull llava</code> instead. When it finishes, the free AI is ready.</span></li>';
 
       // 3. Connect to the app
       steps += '<li><strong>Connect it to AI Screen Control</strong>' +
@@ -1268,11 +1271,11 @@ body > main > #reviews, body > main > #accessibility { background: var(--light);
       steps += '<li><strong>If it says “can\'t reach the local AI”</strong>' +
         '<span>Make sure Ollama is running (its icon should be visible), and that the model finished downloading. You can re-check by running:</span>' +
         cmd('ollama list') +
-        '<span><code>llava</code> should appear in the list.</span></li>' +
+        '<span><code>gemma3</code> (or the model you pulled) should appear in the list.</span></li>' +
         '<li><strong>If it says “unknown model architecture”</strong>' +
         '<span>Your Ollama version is too old for that model. Update Ollama from ' +
-        '<a href="https://ollama.com/download" target="_blank" rel="noopener">ollama.com/download</a>, ' +
-        'or simply use <code>llava</code> — it works everywhere.</span></li>';
+        '<a href="https://ollama.com/download" target="_blank" rel="noopener">ollama.com/download</a> (just run the installer again), ' +
+        'or use <code>llava</code> — it works on every version.</span></li>';
 
       steps += '</ol>';
 

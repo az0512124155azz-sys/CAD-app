@@ -45,13 +45,16 @@ export default function VideoAnalyzer({ onClose }: VideoAnalyzerProps) {
     invoke<MediaTools>('check_media_tools')
       .then((t) => {
         setTools(t);
-        // Auto-pick an installed vision model (newest first) so it just works.
-        const vision = t.ollama_models.find((m) =>
-          ['gemma3', 'llava', 'vision', 'moondream', 'qwen2.5vl', 'qwen3-vl', 'minicpm-v'].some(
-            (v) => m.includes(v)
-          )
-        );
-        if (vision) setVisionModel(vision);
+        // Auto-pick an installed vision model so it just works.
+        // llama3.2-vision (mllama) is skipped — many Ollama builds can't run it.
+        const models = t.ollama_models.filter((m) => !m.includes('llama3.2-vision'));
+        for (const pref of ['gemma3', 'llava', 'moondream', 'qwen3-vl', 'qwen2.5vl', 'minicpm-v']) {
+          const hit = models.find((m) => m.includes(pref));
+          if (hit) {
+            setVisionModel(hit);
+            break;
+          }
+        }
       })
       .catch(() => setTools(null));
 

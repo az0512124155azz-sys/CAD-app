@@ -69,13 +69,14 @@ export default function App() {
   };
 
   // Prefer a vision-capable local model when chatting through Ollama.
+  // llama3.2-vision (mllama) is skipped — many Ollama builds can't run it.
   const pickOllamaModel = () => {
-    const models = ollama.models;
-    const isVision = (m: string) =>
-      ['gemma3', 'llava', 'vision', 'moondream', 'qwen2.5vl', 'qwen3-vl', 'minicpm-v'].some((v) =>
-        m.includes(v)
-      );
-    return models.find(isVision) || models[0] || 'gemma3';
+    const models = ollama.models.filter((m) => !m.includes('llama3.2-vision'));
+    for (const pref of ['gemma3', 'llava', 'moondream', 'qwen3-vl', 'qwen2.5vl', 'minicpm-v']) {
+      const hit = models.find((m) => m.includes(pref));
+      if (hit) return hit;
+    }
+    return models[0] || 'gemma3';
   };
 
   const sendMessage = async (text?: string) => {

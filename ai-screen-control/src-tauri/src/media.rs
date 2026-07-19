@@ -300,7 +300,7 @@ async fn ollama_generate(
     let body = resp.text().await.unwrap_or_default();
     if body.contains("unknown model architecture") {
       return Err(format!(
-        "Your Ollama version is too old to run '{}' (it doesn't know this model's architecture). Fix: update Ollama from ollama.com/download, or use the 'llava' model instead (ollama pull llava).",
+        "Your Ollama can't run the model '{}' (unknown architecture). Fix: open a terminal and run 'ollama pull gemma3' (or 'ollama pull llava'), then try again. If you installed llama3.2-vision, remove it with 'ollama rm llama3.2-vision' — it doesn't work on many Ollama versions.",
         model
       ));
     }

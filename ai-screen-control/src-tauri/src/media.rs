@@ -59,6 +59,55 @@ fn http_client(secs: u64) -> Result<reqwest::Client, String> {
     .map_err(|e| e.to_string())
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct OllamaStatus {
+  pub connected: bool,
+  pub models: Vec<String>,
+}
+
+// Lightweight liveness check — safe to poll every few seconds from the UI.
+#[tauri::command]
+pub async fn check_ollama() -> Result<OllamaStatus, String> {
+  let mut status = OllamaStatus { connected: false, models: Vec::new() };
+  if let Ok(client) = http_client(3) {
+    if let Ok(resp) = client.get(format!("{}/api/tags", OLLAMA_URL)).send().await {
+      if resp.status().is_success() {
+        status.connected = true;
+        if let Ok(v) = resp.json::<serde_json::Value>().await {
+          if let Some(models) = v["models"].as_array() {
+            for m in models {
+              if let Some(name) = m["name"].as_str() {
+                status.models.push(name.to_string());
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  Ok(status)
+}
+
+// Chat with a local Ollama model — free, no API key. Screenshot path optional.
+#[tauri::command]
+pub async fn send_to_ollama(
+  question: String,
+  screenshot: Option<String>,
+  model: Option<String>,
+) -> Result<serde_json::Value, String> {
+  let model = model.unwrap_or_else(|| "llava".to_string());
+  let mut images: Vec<String> = Vec::new();
+  if let Some(path) = screenshot {
+    if !path.trim().is_empty() {
+      let bytes = std::fs::read(path.trim())
+        .map_err(|e| format!("Could not read screenshot file: {}", e))?;
+      images.push(B64.encode(&bytes));
+    }
+  }
+  let answer = ollama_generate(&model, &question, images).await?;
+  Ok(serde_json::json!({ "success": true, "response": answer }))
+}
+
 // Which local helper tools are installed?
 #[tauri::command]
 pub async fn check_media_tools() -> Result<MediaTools, String> {
@@ -247,12 +296,21 @@ async fn ollama_generate(
     .await
     .map_err(|e| format!("Ollama request failed: {}", e))?;
   if !resp.status().is_success() {
-    return Err(format!(
-      "Ollama returned an error ({}). Is the model '{}' pulled? Try: ollama pull {}",
-      resp.status(),
-      model,
-      model
-    ));
+    let status = resp.status();
+    let body = resp.text().await.unwrap_or_default();
+    if body.contains("unknown model architecture") {
+      return Err(format!(
+        "Your Ollama version is too old to run '{}' (it doesn't know this model's architecture). Fix: update Ollama from ollama.com/download, or use the 'llava' model instead (ollama pull llava).",
+        model
+      ));
+    }
+    if body.contains("not found") {
+      return Err(format!(
+        "The model '{}' is not installed. Run: ollama pull {}",
+        model, model
+      ));
+    }
+    return Err(format!("Ollama returned an error ({}): {}", status, body));
   }
   let v = resp
     .json::<serde_json::Value>()

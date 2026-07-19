@@ -277,3 +277,52 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Connection status badge */
+.conn-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.conn-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.conn-ok {
+  background: rgba(22, 163, 74, 0.12);
+  color: #16a34a;
+}
+
+.conn-ok .conn-dot {
+  animation: conn-pulse 2s ease-in-out infinite;
+}
+
+.conn-api {
+  background: rgba(102, 126, 234, 0.12);
+  color: #667eea;
+}
+
+.conn-api .conn-dot {
+  animation: conn-pulse 2s ease-in-out infinite;
+}
+
+.conn-off {
+  background: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
+}
+
+@keyframes conn-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}

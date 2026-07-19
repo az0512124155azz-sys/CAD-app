@@ -101,25 +101,39 @@ pub async fn screenshot() -> Result<ScreenshotResult, String> {
 pub async fn send_to_ai(request: AIRequest) -> Result<AIResponse, String> {
   let client = reqwest::Client::new();
 
+  // The frontend hands us a file path; Anthropic needs the actual bytes as base64.
+  let screenshot_b64 = match &request.screenshot {
+    Some(path) if !path.trim().is_empty() => {
+      use base64::{engine::general_purpose::STANDARD, Engine as _};
+      let bytes = std::fs::read(path.trim())
+        .map_err(|e| format!("Could not read screenshot file: {}", e))?;
+      Some(STANDARD.encode(&bytes))
+    }
+    _ => None,
+  };
+
+  let mut content = vec![serde_json::json!({
+    "type": "text",
+    "text": request.question
+  })];
+  if let Some(data) = screenshot_b64 {
+    content.push(serde_json::json!({
+      "type": "image",
+      "source": {
+        "type": "base64",
+        "media_type": "image/png",
+        "data": data
+      }
+    }));
+  }
+
   let body = serde_json::json!({
     "model": request.model,
+    "max_tokens": 2048,
     "messages": [
       {
         "role": "user",
-        "content": [
-          {
-            "type": "text",
-            "text": request.question
-          },
-          {
-            "type": "image",
-            "source": {
-              "type": "base64",
-              "media_type": "image/png",
-              "data": request.screenshot
-            }
-          }
-        ]
+        "content": content
       }
     ]
   });

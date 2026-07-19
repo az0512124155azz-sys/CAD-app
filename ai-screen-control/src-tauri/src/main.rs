@@ -4,7 +4,7 @@
 mod commands;
 mod media;
 use commands::{screenshot, send_to_ai, control_mouse, control_keyboard, get_window_info};
-use media::{check_media_tools, analyze_media_local};
+use media::{check_media_tools, analyze_media_local, check_ollama, send_to_ollama};
 
 fn main() {
   tauri::Builder::default()
@@ -15,7 +15,9 @@ fn main() {
       control_keyboard,
       get_window_info,
       check_media_tools,
-      analyze_media_local
+      analyze_media_local,
+      check_ollama,
+      send_to_ollama
     ])
     .run(tauri::generate_context!())
     .expect("error while running AI Screen Control");

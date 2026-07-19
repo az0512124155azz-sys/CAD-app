@@ -737,7 +737,7 @@ body > main > #reviews, body > main > #accessibility { background: var(--light);
             <span class="step-num">2</span>
             <h4>Download a vision model</h4>
             <p>Open a terminal and run this once:</p>
-            <code>ollama pull llama3.2-vision</code>
+            <code>ollama pull llava</code>
           </div>
           <div class="localai-step">
             <span class="step-num">3</span>
@@ -1252,7 +1252,7 @@ body > main > #reviews, body > main > #accessibility { background: var(--light);
       steps += '<li><strong>Download a model that can see the screen</strong>' +
         '<span>Open a terminal (' + (os === 'windows' ? 'search “cmd” in Start' : 'Terminal') +
         ') and run this once. It\'s a few GB, so give it a minute:</span>' +
-        cmd('ollama pull llama3.2-vision') +
+        cmd('ollama pull llava') +
         '<span>When it finishes, the free AI is ready.</span></li>';
 
       // 3. Connect to the app
@@ -1268,7 +1268,11 @@ body > main > #reviews, body > main > #accessibility { background: var(--light);
       steps += '<li><strong>If it says “can\'t reach the local AI”</strong>' +
         '<span>Make sure Ollama is running (its icon should be visible), and that the model finished downloading. You can re-check by running:</span>' +
         cmd('ollama list') +
-        '<span><code>llama3.2-vision</code> should appear in the list.</span></li>';
+        '<span><code>llava</code> should appear in the list.</span></li>' +
+        '<li><strong>If it says “unknown model architecture”</strong>' +
+        '<span>Your Ollama version is too old for that model. Update Ollama from ' +
+        '<a href="https://ollama.com/download" target="_blank" rel="noopener">ollama.com/download</a>, ' +
+        'or simply use <code>llava</code> — it works everywhere.</span></li>';
 
       steps += '</ol>';
 

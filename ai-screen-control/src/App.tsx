@@ -14,6 +14,11 @@ interface Message {
   timestamp: Date;
 }
 
+interface OllamaStatus {
+  connected: boolean;
+  models: string[];
+}
+
 export default function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -23,11 +28,26 @@ export default function App() {
   const [apiKey, setApiKey] = useState(localStorage.getItem('claude_api_key') || '');
   const [screenshot, setScreenshot] = useState<string | null>(null);
   const [isBubbleVisible, setIsBubbleVisible] = useState(true);
+  const [ollama, setOllama] = useState<OllamaStatus>({ connected: false, models: [] });
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     localStorage.setItem('claude_api_key', apiKey);
   }, [apiKey]);
+
+  // Live connection status — polls Ollama every 5s so the badge flips
+  // to "connected" within seconds of Ollama starting up.
+  useEffect(() => {
+    let alive = true;
+    const check = () => {
+      invoke<OllamaStatus>('check_ollama')
+        .then((s) => { if (alive) setOllama(s); })
+        .catch(() => { if (alive) setOllama({ connected: false, models: [] }); });
+    };
+    check();
+    const id = setInterval(check, 5000);
+    return () => { alive = false; clearInterval(id); };
+  }, []);
 
   const takeScreenshot = async () => {
     try {
@@ -48,9 +68,26 @@ export default function App() {
     }
   };
 
+  // Prefer a vision-capable local model when chatting through Ollama.
+  const pickOllamaModel = () => {
+    const models = ollama.models;
+    return (
+      models.find((m) => m.includes('llava') || m.includes('vision') || m.includes('moondream')) ||
+      models[0] ||
+      'llava'
+    );
+  };
+
   const sendMessage = async (text?: string) => {
     const messageText = text || input;
-    if (!messageText.trim() || !apiKey) return;
+    if (!messageText.trim()) return;
+    if (!apiKey && !ollama.connected) {
+      addMessage({
+        role: 'assistant',
+        content: '❌ Not connected. Add a Claude API key in Settings, or start Ollama (free local AI).',
+      });
+      return;
+    }
 
     addMessage({
       role: 'user',
@@ -61,12 +98,18 @@ export default function App() {
     setLoading(true);
 
     try {
-      const result: any = await invoke('send_to_ai', {
-        question: messageText,
-        screenshot: screenshot,
-        apiKey: apiKey,
-        model: 'claude-3-5-sonnet-20241022',
-      });
+      const result: any = apiKey
+        ? await invoke('send_to_ai', {
+            question: messageText,
+            screenshot: screenshot,
+            apiKey: apiKey,
+            model: 'claude-3-5-sonnet-20241022',
+          })
+        : await invoke('send_to_ollama', {
+            question: messageText,
+            screenshot: screenshot,
+            model: pickOllamaModel(),
+          });
 
       if (result.success) {
         addMessage({
@@ -133,6 +176,9 @@ export default function App() {
         showSettings={() => setShowSettings(true)}
         showVideoAnalyzer={() => setShowVideo(true)}
         toggleBubble={() => setIsBubbleVisible(!isBubbleVisible)}
+        ollamaConnected={ollama.connected}
+        ollamaModel={ollama.connected ? pickOllamaModel() : ''}
+        hasApiKey={!!apiKey}
       />
     </div>
   );

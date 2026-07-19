@@ -21,6 +21,9 @@ interface ChatInterfaceProps {
   showSettings: () => void;
   showVideoAnalyzer: () => void;
   toggleBubble: () => void;
+  ollamaConnected: boolean;
+  ollamaModel: string;
+  hasApiKey: boolean;
 }
 
 export default function ChatInterface({
@@ -35,6 +38,9 @@ export default function ChatInterface({
   showSettings,
   showVideoAnalyzer,
   toggleBubble,
+  ollamaConnected,
+  ollamaModel,
+  hasApiKey,
 }: ChatInterfaceProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -55,6 +61,19 @@ export default function ChatInterface({
         <div className="header-title">
           <MessageSquare size={20} />
           <span>AI Screen Control</span>
+          {hasApiKey ? (
+            <span className="conn-badge conn-api" title="Chatting with your Claude API key">
+              <span className="conn-dot" /> API connected
+            </span>
+          ) : ollamaConnected ? (
+            <span className="conn-badge conn-ok" title={`Chatting with free local AI${ollamaModel ? ` (${ollamaModel})` : ''}`}>
+              <span className="conn-dot" /> Ollama connected
+            </span>
+          ) : (
+            <span className="conn-badge conn-off" title="Start Ollama or add an API key in Settings">
+              <span className="conn-dot" /> Not connected
+            </span>
+          )}
         </div>
         <div className="header-actions">
           <button className="icon-btn" onClick={showVideoAnalyzer} title="Analyze Video / Audio (local, no API)">
